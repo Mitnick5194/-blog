@@ -1,0 +1,384 @@
+@charset "utf-8";
+/* 如果不设置overflow:hidden 会出现横向滚动条 */
+html, body {
+	overflow: hidden;
+	overflow-y: auto;
+	background-color: #f5f6f7;
+}
+
+/* 移动端头部 */
+.min-width-client-header {
+	height: 50px;
+	line-height: 50px;
+	background: #fff;
+}
+
+/* 移动端头部展开按钮 */
+.min-width-client-header .tag-btn {
+	margin-left: 10px;
+	padding: 6px 7px;
+	border: 1px solid #eee;
+	background-color: #fafafa;
+	border-radius: 3px;
+}
+
+.min-width-client-header .tag-btn:focus {
+	outline: none;
+}
+
+.min-width-client-header .tag-btn .bar-icon {
+	width: 22px;
+	height: 2px;
+	border-radius: 1px;
+	display: block;
+	background-color: #bbb;
+}
+
+.min-width-client-header .tag-btn .bar-icon+.bar-icon {
+	margin-top: 5px;
+}
+
+.menu-wrap a {
+	color: #3D3D3D
+}
+
+/* 桌面端左侧标签栏 */
+.left-tag {
+	width: 250px;
+	position: absolute;
+	top: 0;
+	left: -250px;
+	transition: all .25s ease-out;
+	z-index: 1001;
+}
+
+.left-tag.slide-control {
+	left: 0;
+}
+
+.container {
+	position: relative;
+	margin-top: 15px;
+	left: 0;
+	transition: all .25s ease-out;
+}
+
+.container.active {
+	left: 200px;
+}
+
+.right-info {
+	display: none;
+}
+
+.list-group {
+	border: 1px solid #eee;
+	border-radius: 3px;
+	background: #fff;
+}
+
+.list-group a {
+	display: inline-block;
+	width: 100%;
+	padding: 10px 0;
+	text-align: center;
+}
+
+.list-group a+a {
+	border-top: 1px solid #eee;
+}
+
+.list-group .active {
+	background-color: #337ab7;
+	color: #fff;
+}
+
+.btn-nav {
+	margin-right: 15px;
+	display: block;
+	white-space: nowrap;
+}
+
+.fl-rl-a {
+	padding-right: 15px;
+	padding-left: 15px;
+	margin-right: auto;
+	margin-left: auto;
+}
+
+.user{
+	cursor: pointer;
+}
+.user:hover{
+	text-decoration: underline;
+}
+
+/* 桌面屏幕 结束*/
+
+/* 博客内容 */
+.content-dv {
+	padding: 20px;
+	border-bottom: 1px solid #eee;
+}
+
+.content-dv-title {
+	padding: 10px 0;
+}
+
+.content-dv-title span {
+	padding: 10px 0;
+	color: #3d3d3d;
+}
+
+.summary {
+	line-height: 1.5;
+	margin-bottom: 10px;
+}
+
+.cl78 {
+	color: #787878;
+}
+
+.col-gray {
+	color: #8a8a8a
+}
+
+.list-user-bar {
+	display: flex;
+	height: 25px;
+	line-height: 25px;
+}
+
+.list-user-bar>.sec-left {
+	width: 100%;
+	display: flex;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.list-user-bar>.sec-right {
+	width: 150px;
+	text-align: right;
+	display: none;
+}
+
+.list-user-bar>.sec>div {
+	display: inline-block;
+	height: 25px;
+	vertical-align: top;
+	position: relative;
+}
+
+.list-user-bar>.sec>.inteval {
+	padding-right: 15px;
+	padding-left: 5px;
+}
+
+.list-user-bar .inteval:after {
+	content: '';
+	position: absolute;
+	width: 2px;
+	height: 2px;
+	right: 0px;
+	top: 11px;
+	background: #adadad;
+	border-radius: 50%;
+}
+
+.list-user-bar .labels>span {
+	padding-right: 5px;
+}
+
+.color-gre {
+	color: #3399ea;
+}
+
+.center-main {
+	padding: 20px;
+	background: #fff;
+}
+
+.center-main>.title{
+	font-size: 22px;
+	font-weight: bold;
+}
+.center-main>section{
+	padding: 5px 0;
+}
+
+.user-list>span{
+	display: inline-block;
+	padding: 0 5px;
+}
+
+.content{
+	line-height: 25px;
+}
+
+.right-info>.hits{
+	display: inline-block;
+	width: 100%;
+	font-size: 16px;
+	text-align: center;
+}
+
+.wxgz-qrcode{
+	text-align: center;
+}
+
+.list-user-bar .user-header {
+	display: block;
+	width: 25px;
+	height: 25px;
+	border-radius: 50%;
+	overflow: hidden;
+	object-fit: cover;
+	margin-right: 10px;
+}
+
+/* 右侧 */
+.right-info {
+	padding: 30px 0px;
+}
+
+.login-part {
+	padding: 10px;
+	margin: 0 5px;
+	border: 1px solid #d5dce5;
+}
+
+.user-info h2 {
+	margin: 0;
+	position: relative;
+	color: #4d5e73;
+	margin-bottom: 15px;
+}
+
+.user-info input[type="text"], .user-info input[type="password"] {
+	background: #fff;
+	display: block;
+	width: 100%;
+	padding: 10px 0;
+	border: 1px solid #d5dce5;
+	font-weight: normal;
+	text-indent: 23px;
+	outline: 0;
+	border-radius: 3px;
+}
+
+.user-info input[type=text] {
+	margin-bottom: 20px;
+}
+
+.forget-password {
+	margin-top: 10px;
+}
+
+.rememberMe-label {
+	padding: 0 10px;
+	-moz-user-select: none; /*火狐*/
+	-webkit-user-select: none; /*webkit浏览器*/
+	-ms-user-select: none; /*IE10*/
+	-khtml-user-select: none; /*早期浏览器*/
+	user-select: none;
+}
+
+.forget-password-sp {
+	float: right;
+}
+
+.forget-password-sp a {
+	text-decoration: none;
+	color: #4d5e73;
+}
+
+.forget-password-sp a:hover {
+	text-decoration: underline;
+}
+
+.loginBtn {
+	padding: 10px 5px;
+	background: #337ab7;
+	border-radius: 5px;
+	text-align: center;
+	font-size: 18px;
+	color: #fff;
+	margin-top: 15px;
+}
+
+.register-dv {
+	margin-top: 10px;
+}
+
+.register-dv a {
+	color: #4d5e73;
+}
+
+.register-dv a:hover {
+	text-decoration: underline;
+}
+
+/* 响应各种屏幕 */
+/* 平板居多屏幕 */
+@media screen and (min-width: 768px) { 
+	.min-width-client-header {
+		display: none;
+	}
+	.container {
+		display: flex;
+	}
+	.left-tag {
+		width: 200px;
+		position: unset;
+	}
+	
+	.center-main{
+		width: 100%;
+		margin-left:10px;
+	}
+}
+/* 平板居多屏幕 结束*/
+
+/* 小分辨率桌面屏幕 */
+@media screen and (min-width: 992px) {
+	.nav {
+		/* 	width: 970px;
+		background-color: #eee; */
+		
+	}
+}
+/* 小分辨率桌面 结束*/
+
+/* 桌面屏幕 */
+@media screen and (min-width: 1200px) {
+	.min-width-client-header {
+		display: none;
+	}
+	.container {
+		width: 1170px;
+		display: flex;
+	}
+	.left-tag {
+		width: 200px;
+		position: unset;
+	}
+	.right-info {
+		width: 300px;
+		float: right;
+		display: inline-block;
+		background: #fff;
+		margin-left: 10px;
+	}
+	.center-main {
+		width: calc(100% - 500px);
+		width: -webkit-calc(100% - 500px);
+		margin-left: 10px;
+	}
+	.btn-nav {
+		margin-right: 25px;
+	}
+	.list-user-bar>.sec-right {
+		display: block;
+	}
+}

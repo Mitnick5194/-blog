@@ -1,0 +1,6 @@
+* {margin: 0;padding: 0;}
+body {font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;font-size: 14px;line-height: 1.42857143;color: #333;}
+a {text-decoration: none;}
+.floatR{float: right;}
+.flex{display: flex;}
+ input,textarea,select,a:focus {outline: none;}
