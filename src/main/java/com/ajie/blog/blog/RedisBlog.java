@@ -29,8 +29,8 @@ public class RedisBlog {
 
 	private void load() {
 		try {
-			RedisBlogVo blogVo = redisClient.hgetAsBean(BlogService.REDIS_PREFIX, vo.getId() + "",
-					RedisBlogVo.class);
+			RedisBlogVo blogVo = redisClient.hgetAsBean(BlogService.REDIS_PREFIX,
+					BlogService.REDIS_PREFIX + vo.getId(), RedisBlogVo.class);
 			if (null == blogVo)
 				blogVo = new RedisBlogVo();
 			vo.setCollectnum(blogVo.getCollectnum());
@@ -92,11 +92,12 @@ public class RedisBlog {
 
 	private void save() {
 		try {
-			redisClient.hset(BlogService.REDIS_PREFIX, vo.getId() + "", vo);
+			redisClient.hset(BlogService.REDIS_PREFIX, BlogService.REDIS_PREFIX + vo.getId(), vo);
 		} catch (RedisException e) {
 			try {
 				// 重试
-				redisClient.hset(BlogService.REDIS_PREFIX, vo.getId() + "", vo);
+				redisClient.hset(BlogService.REDIS_PREFIX, BlogService.REDIS_PREFIX + vo.getId(),
+						vo);
 			} catch (RedisException e1) {
 				logger.warn("RedisBlogVo保存缓存失败", e1);
 			}

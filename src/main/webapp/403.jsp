@@ -24,6 +24,6 @@
 </head>
 <body>
 	<div class="notify">抱歉，权限不足，如需继续访问，<br>请联系管理员！</div>
-	<div class="qrcode-dv"><img src="/images/my_qr_code.jpg" width="200px"/></div>
+	<div class="qrcode-dv"><img src="${ pageContext.request.contextPath }/images/my_qr_code.jpg" width="200px"/></div>
 </body>
 </html>

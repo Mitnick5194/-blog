@@ -48,7 +48,7 @@
 	
 	$("#iBlogs").on("click" , ".blogTitle" , function(){
 		var id = $(this).attr("data-id");
-		location.href = "blog.do?id="+id;
+		window.open("blog.do?id="+id);
 	})
 	
 	

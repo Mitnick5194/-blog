@@ -6,8 +6,8 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width , initial-scale=1">
 <title>博客专栏</title>
-<link href="../css/common.css" rel="stylesheet" type="text/css">
-<link href="/blog/css/index.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/css/common.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/blog/css/index.css" rel="stylesheet" type="text/css">
 
 <style type="text/css">
 </style>
@@ -61,13 +61,13 @@
 				</div>
 			</div>
 	</div>
-	<script type="text/javascript" src="/js/jquery-1.9.1.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/js/jquery-1.9.1.js"></script>
 	<script type="text/temp" id="iBlogTemp">
 		<section class="content-dv item">
 	            <h2  data-id="[id]"  class="content-dv-title blogTitle" title="">
 	            <span>[title]</span>
 	            </h2>
-	            <div class="summary">[content]</div>
+	            <div class="summary">[abstractContent]</div>
 		  <div class="list-user-bar">
 		  	<section class="sec-left sec">
 		  		<div ><img class="user-header" src="[userHeader]" /></div>
@@ -92,7 +92,7 @@
 		})
 		
 	</script>
-	<script type="text/javascript" src="/blog/js/index.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/blog/js/index.js"></script>
 	
 	
 </body>

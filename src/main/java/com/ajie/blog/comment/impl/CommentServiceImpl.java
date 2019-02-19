@@ -108,4 +108,9 @@ public class CommentServiceImpl implements CommentService {
 		return comments;
 	}
 
+	@Override
+	public int getBlogCommentCount(int blogId) {
+		int commentCount = mapper.getBlogCommentCount(blogId);
+		return commentCount;
+	}
 }

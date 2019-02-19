@@ -71,4 +71,11 @@ public interface CommentService {
 	 */
 	List<TbComment> getComments(int blogId);
 
+	/**
+	 * 获取指定博客的评论条数
+	 * 
+	 * @return
+	 */
+	int getBlogCommentCount(int blogId);
+
 }

@@ -6,9 +6,9 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width , initial-scale=1">
 <title>${empty id ? '发布博客': '编辑博客' }</title>
-<link href="../css/common.css" rel="stylesheet" type="text/css">
-<script type="text/javascript" src="/js/jquery-1.9.1.js"></script>
+<link href="${ pageContext.request.contextPath }/css/common.css" rel="stylesheet" type="text/css">
 <style type="text/css">
+.container{margin-bottom: 50px;}
 .nav{width: 90%; margin: 0 auto; height: 40px;background: #eee;}
 .main{width: 90%;margin: 0 auto;margin-top: 20px;}
 .main>.left{width: 260px;}
@@ -25,12 +25,13 @@
 .input-group{display: flex;}
 .input-group input{background: #eee;border: none;width: 80px;border-radius: 3px;padding: 5px; }
 .delLabelBtn{display: inline-block;width: 20px;height: 100%;color: #888;font-size: 22px;margin-right: 3px;text-align: center;cursor: pointer;}
+.submit-btn{cursor:pointer; display: inline-block;width: 120px;padding: 8px 0;text-align: center;background:#349EDF;border-radius: 5px; color:#fff;}
 </style>
- <script src="/ckeditor/ckeditor.js"></script>
+
 </head>
 <body>
 	
-	<div >
+	<div class="container">
 		<div class="nav">这是 导航</div>
 		<div class="flex main">
 			<div class="left">left</div>
@@ -51,11 +52,13 @@
 			    		</div>
 			    	</div>
 			     </form> 
-			     <button id="iBtn">点击</button>
+			     <div class="submit-btn" id="iBtn">发布</div>
 			</div>
 		</div>
 	</div>
-     <script type="text/javascript" src="/blog/js/addblog.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/js/jquery-1.9.1.js"></script>
+	 <script src="${ pageContext.request.contextPath }/ckeditor/ckeditor.js"></script>
+     <script type="text/javascript" src="${ pageContext.request.contextPath }/blog/js/addblog.js"></script>
       <script>
           
 	   </script>

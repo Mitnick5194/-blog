@@ -24,6 +24,6 @@
 </head>
 <body>
 	<div class="notify">OH NO 出错啦！<br>赶紧喊他 ☟ 来修bugs！</div>
-	<div class="qrcode-dv"><img src="/images/my_qr_code.jpg" width="200px"/></div>
+	<div class="qrcode-dv"><img src="${ pageContext.request.contextPath }/images/my_qr_code.jpg" width="200px"/></div>
 </body>
 </html>

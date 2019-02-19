@@ -35,6 +35,7 @@ import com.ajie.chilli.picture.PictureException;
 import com.ajie.chilli.picture.PictureService;
 import com.ajie.chilli.utils.TimeUtil;
 import com.ajie.chilli.utils.Toolkits;
+import com.ajie.dao.mapper.TbBlogMapper;
 import com.ajie.dao.pojo.TbBlog;
 import com.ajie.dao.pojo.TbUser;
 import com.ajie.sso.user.UserService;
@@ -62,6 +63,9 @@ public class BlogController {
 	@Resource
 	private RedisClient redisClient;
 
+	@Resource
+	private TbBlogMapper mapper;
+
 	/**
 	 * 首页路径
 	 * 
@@ -71,6 +75,8 @@ public class BlogController {
 	 */
 	@RequestMapping("/index.do")
 	public String index(HttpServletRequest request, HttpServletResponse response) {
+		/*int count = mapper.getBlogCountById(1);
+		System.out.println(count);*/
 		return prefix + "index";
 	}
 
@@ -119,15 +125,34 @@ public class BlogController {
 		List<BlogVo> trans = new TransList<BlogVo, TbBlog>(blogs) {
 			@Override
 			public BlogVo trans(TbBlog v) {
-				// TODO 每条数据都要查询一次数据库，开销太大了，应该把用户名字冗余到blog表
-				TbUser user = userService.getUserById(v.getUserid());
-				BlogVo vo = new BlogVo(v);
-				vo.setUser(user.getName());
-				vo.setUserHeader(user.getHeader());
-				return vo;
+				return new BlogVo(v);
 			}
 		};
 		return ResponseResult.newResult(ResponseResult.CODE_SUC, trans);
+	}
+
+	/**
+	 * 通过id拿到博客
+	 * 
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping("/getblogbyid")
+	public ResponseResult getblogbyid(HttpServletRequest request, HttpServletResponse response) {
+		int id = Toolkits.toInt(request.getParameter("id"), 0);
+		TbUser operator = userService.getUser(request);
+		try {
+			TbBlog blog = blogService.getBlogById(id, operator);
+			if (null == blog) {
+				return ResponseResult.newResult(ResponseResult.CODE_ERR, "文章不存在");
+			}
+			BlogVo vo = new BlogVo(blog);
+			return ResponseResult.newResult(ResponseResult.CODE_SUC, vo);
+		} catch (BlogException e) {
+			return ResponseResult.newResult(ResponseResult.CODE_ERR, e.getMessage());
+		}
 	}
 
 	/**
@@ -154,6 +179,9 @@ public class BlogController {
 		TbBlog blog = new TbBlog(title, content);
 		blog.setLabelstrs(labelstrs);
 		blog.setUserid(operator.getId());
+		blog.setUserheader(operator.getHeader());
+		blog.setUsername(operator.getName());
+		blog.setUsernickname(operator.getNickname());
 		try {
 			blogService.createBlog(blog);
 		} catch (BlogException e) {
@@ -168,33 +196,6 @@ public class BlogController {
 			return ResponseResult.newResult(ResponseResult.CODE_ERR, "微博发布成功，标签添加失败");
 		}
 		return ResponseResult.newResult(ResponseResult.CODE_SUC, "发布成功");
-	}
-
-	/**
-	 * 通过id拿到博客
-	 * 
-	 * @param request
-	 * @param response
-	 * @return
-	 */
-	@ResponseBody
-	@RequestMapping("/getblogbyid")
-	public ResponseResult getblogbyid(HttpServletRequest request, HttpServletResponse response) {
-		int id = Toolkits.toInt(request.getParameter("id"), 0);
-		TbUser operator = userService.getUser(request);
-		try {
-			TbBlog blog = blogService.getBlogById(id, operator);
-			if (null == blog) {
-				return ResponseResult.newResult(ResponseResult.CODE_ERR, "文章不存在");
-			}
-			BlogVo vo = new BlogVo(blog);
-			TbUser user = userService.getUserById(blog.getUserid());
-			vo.setUser(user.getName());
-			vo.setUserHeader(user.getHeader());
-			return ResponseResult.newResult(ResponseResult.CODE_SUC, vo);
-		} catch (BlogException e) {
-			return ResponseResult.newResult(ResponseResult.CODE_ERR, e.getMessage());
-		}
 	}
 
 	/**

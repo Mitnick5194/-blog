@@ -38,7 +38,7 @@
     			 labels: labels
     		 },
     		 success: function(data){
-    			 console.log(data);
+    			 location.href = "index.do";
     		 },
     		 fail: function(){
     			 

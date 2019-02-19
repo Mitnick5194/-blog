@@ -121,8 +121,7 @@ public interface BlogService {
 	 * @param state
 	 *            状态，0表示全部
 	 * @param operator
-	 *            操作者，如果不是自己或管理员或su，则不能查看私有的博客，查看一般状态的可以传null，其他可以传登录者，
-	 *            用于校验是否为自己操作
+	 *            操作者，如果不是自己或管理员或su，则不能查看私有的博客
 	 * @return
 	 */
 	List<TbBlog> getBlogs(TbUser user, int state, TbUser operator);
@@ -174,7 +173,7 @@ public interface BlogService {
 	 * 
 	 * @param blog
 	 * @param operator
-	 *            操作者，用于检验要删除的博客是不是自己的或者是不是管理员删除 如果是自己删 则传null
+	 *            操作者，用于检验要删除的博客是不是自己的或者是不是管理员删除 
 	 * @throws BlogException
 	 */
 	void deleteBlog(TbBlog blog, TbUser operator) throws BlogException;
@@ -197,15 +196,5 @@ public interface BlogService {
 	 * @throws BlogException
 	 */
 	TbBlog updateBlog(TbBlog blog) throws BlogException;
-
-	/**
-	 * 将非实时数据（阅读数、评论数、收藏数、点赞数）更新保存到redis
-	 * 
-	 * @param blog
-	 * @return
-	 * @throws BlogException
-	 *             异常时，处理对策由调用者完成（如持久到数据库）
-	 */
-	//void update2Redis(TbBlog blog) throws BlogException;
 
 }

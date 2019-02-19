@@ -14,18 +14,16 @@
 	<!-- 加载所有的配置文件 -->
 	<context:property-placeholder location="classpath:properties/*.properties" />
 	<!-- 这个过滤器一定不能配在spring-mvc的spring文件中 -->
-	<!-- 这个过滤器一定不能配在spring-mvc的spring文件中 -->
-	<bean id="
-			requestFilter " class="com.ajie.web.RequestFilter">
+	<bean id="requestFilter" class="com.ajie.web.RequestFilter">
 		<property name="userService" ref="userService" />
 		<property name="encoding" value="utf-8" />
 		<property name="mode" value="intercept" />
 		<property name="uriList">
 			<list>
-				<value>/user/*</value>
+				<value>*addblog*</value>
 			</list>
 		</property>
-		<property name="loginURL" value="/res/login.do?ref=" />
+		<property name="ssoHost" value="${sso-host}" />
 	</bean>
 
 	<bean id="userService" name="userService"
