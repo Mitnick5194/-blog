@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width , initial-scale=1">
 <title>博客专栏</title>
 <link href="${ pageContext.request.contextPath }/css/common.css" rel="stylesheet" type="text/css">
-<link href="${ pageContext.request.contextPath }/blog/css/index.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/blog/css/index.css?d=2019" rel="stylesheet" type="text/css">
 
 <style type="text/css">
 </style>
@@ -70,7 +70,7 @@
 	            <div class="summary">[abstractContent]</div>
 		  <div class="list-user-bar">
 		  	<section class="sec-left sec">
-		  		<div ><img class="user-header" src="[userHeader]" /></div>
+		  		<div class="header-dv"><img class="user-header" src="[userHeader]" /></div>
 		  		<div class="inteval">[user]</div>
 		  		<div  class="inteval">[createDate]</div>
 		  		<div  class="color-gre labels">

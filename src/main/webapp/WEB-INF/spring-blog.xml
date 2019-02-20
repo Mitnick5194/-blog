@@ -18,6 +18,7 @@
 		<property name="userService" ref="userService" />
 		<property name="encoding" value="utf-8" />
 		<property name="mode" value="intercept" />
+		<property name="redisClient" ref="redisClient" />
 		<property name="uriList">
 			<list>
 				<value>*addblog*</value>
