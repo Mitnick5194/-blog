@@ -27,6 +27,7 @@ import com.ajie.blog.blog.exception.BlogException;
 import com.ajie.blog.comment.CommentService;
 import com.ajie.blog.controller.vo.BlogVo;
 import com.ajie.blog.label.LabelService;
+import com.ajie.blog.label.vo.LabelVo;
 import com.ajie.chilli.cache.redis.RedisClient;
 import com.ajie.chilli.collection.utils.TransList;
 import com.ajie.chilli.common.ResponseResult;
@@ -75,8 +76,12 @@ public class BlogController {
 	 */
 	@RequestMapping("/index.do")
 	public String index(HttpServletRequest request, HttpServletResponse response) {
-		/*int count = mapper.getBlogCountById(1);
-		System.out.println(count);*/
+		TbUser user = userService.getUser(request);
+		if (null != user) {
+			request.setAttribute("username", user.getName());
+			request.setAttribute("userheader", user.getHeader());
+			request.setAttribute("userid", user.getId());
+		}
 		return prefix + "index";
 	}
 
@@ -111,6 +116,12 @@ public class BlogController {
 		return prefix + "addblog";
 	}
 
+	@RequestMapping("/moretags.do")
+	public String moretags(HttpServletRequest request, HttpServletResponse response) {
+		logger.info(1 / 0 + "");
+		return prefix + "moretags";
+	}
+
 	/**
 	 * 加载首页数据
 	 * 
@@ -129,6 +140,20 @@ public class BlogController {
 			}
 		};
 		return ResponseResult.newResult(ResponseResult.CODE_SUC, trans);
+	}
+
+	/**
+	 * 加载所有标签
+	 * 
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping("/loadtags")
+	public ResponseResult loadtags(HttpServletRequest request, HttpServletResponse response) {
+		List<LabelVo> labels = labelService.getLabels();
+		return ResponseResult.newResult(ResponseResult.CODE_SUC, labels);
 	}
 
 	/**

@@ -53,12 +53,16 @@ public class BlogUtil {
 		} else if (inteval < ONEHOUR * 20) {
 			// 小于20小时，使用小时显示
 			return Math.round(inteval / ONEHOUR) + "小时前";
-		} else if (inteval < ONEDAY * 10) {
+		} else if (inteval < ONEDAY * 10) {// 大于20个小时，小于10天
+			if (TimeUtil.isSameDay(date, now)) {
+				// 同一天，仍然显示小时
+				return Math.round(inteval / ONEHOUR) + "小时前";
+			}
 			// 十日以内，显示天数前
 			int day = TimeUtil.inteval(date, now);
 			return dates[day];
 		}
-		return parseDate(date, "yyyy-MM-dd");
+		return parseDate(date, "MM-dd");
 	}
 
 	/**

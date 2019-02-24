@@ -53,9 +53,9 @@ public class BlogVo {
 	 * @param content
 	 */
 	private void handleAbstractContent(String content) {
-		if (content.length() > 300) {
-			// 摘要最多显示300个字
-			content = content.substring(0, 299);
+		if (content.length() > 150) {
+			// 摘要最多显示150个字
+			content = content.substring(0, 149);
 		}
 		StringBuilder sb = new StringBuilder();
 		if (content.indexOf("<img") > -1 && content.indexOf("/>") > -1) {
@@ -171,4 +171,11 @@ public class BlogVo {
 		this.labels = labels;
 	}
 
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
 }

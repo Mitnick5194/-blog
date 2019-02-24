@@ -141,7 +141,7 @@
 				<artifactId>tomcat7-maven-plugin</artifactId>
 				<configuration>
 					<port>8080</port>
-					<path>/blogg</path>
+					<path>/blog</path>
 					<charset>utf-8</charset>
 					<uriEncoding>utf-8</uriEncoding>
 				</configuration>

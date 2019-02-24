@@ -58,19 +58,18 @@ public class LabelServiceImpl implements LabelService {
 		TbLabel label = null;
 		try {
 			label = redis.hgetAsBean(REDIS_PREFIX, labelName, TbLabel.class);
-			return label;
+			if (null != label)
+				return label;
 		} catch (RedisException e) {
 		}
-		if (null == label) {
-			// 去数据库找
-			TbLabelExample ex = new TbLabelExample();
-			Criteria criteria = ex.createCriteria();
-			criteria.andNameEqualTo(labelName);
-			List<TbLabel> labels = mapper.selectByExample(ex);
-			if (null == labels || labels.size() != 1)
-				return null;
-			label = labels.get(0);
-		}
+		// 去数据库找
+		TbLabelExample ex = new TbLabelExample();
+		Criteria criteria = ex.createCriteria();
+		criteria.andNameEqualTo(labelName);
+		List<TbLabel> labels = mapper.selectByExample(ex);
+		if (null == labels || labels.size() != 1)
+			return null;
+		label = labels.get(0);
 		return label;
 	}
 
@@ -78,7 +77,6 @@ public class LabelServiceImpl implements LabelService {
 	public void openLabels(TbBlog blog, List<String> labelNames) throws BlogException {
 		if (null == labelNames)
 			return;
-		List<TbLabel> labels = new ArrayList<TbLabel>(labelNames.size());
 		// 先获取或创建所有传入的标签
 		for (String lab : labelNames) {
 			if (StringUtils.isEmpty(lab))
@@ -93,27 +91,26 @@ public class LabelServiceImpl implements LabelService {
 						has = true;
 					}
 				}
-				if (!has) {
+				if (has) {
 					// 该标签还没有该博客了
-					label.setBlogids(blogids + BLOG_IDS_SEPARATOR + blog.getId());
+					continue;
 				}
+				label.setBlogids(blogids + BLOG_IDS_SEPARATOR + blog.getId());
+				mapper.updateByPrimaryKey(label);
 			} else {
 				label = new TbLabel();
 				label.setName(lab);
 				label.setBlogids(blog.getId() + "");
 				int ret = mapper.insert(label);
 				// 插入成功后保存到缓存
-				if (ret == 1)
+				if (ret == 1) {
 					try {
 						redis.hset(REDIS_PREFIX, lab, label);
 					} catch (RedisException e) {
 						logger.info("label尝试放入缓存失败" + lab, e);
 					}
+				}
 			}
-			labels.add(label);
-		}
-		if (null == blog) {
-			return;
 		}
 	}
 

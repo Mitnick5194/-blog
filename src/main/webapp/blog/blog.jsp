@@ -7,6 +7,7 @@
 <meta name="viewport" content="width=device-width , initial-scale=1">
 <title>博客详情</title>
 <link href="${ pageContext.request.contextPath }/css/common.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/common/common.css" rel="stylesheet" type="text/css">
 <link href="${ pageContext.request.contextPath }/blog/css/blog.css" rel="stylesheet" type="text/css">
 
 <style type="text/css">
@@ -57,6 +58,7 @@
 			</div>
 	</div>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/js/jquery-1.9.1.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/common/mommon.js"></script>
 	<script type="text/temp" id="iBlogTemp">
 	</script>
 	<script>

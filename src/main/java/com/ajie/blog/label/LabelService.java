@@ -51,7 +51,7 @@ public interface LabelService {
 	TbLabel getLabel(String labelName);
 
 	/**
-	 * 打开若干个标签，如果存在，则返回并判断是否有该博客，如果没有，则放入博客；如果不存在，创建并放入博客
+	 * 打开若干个标签，如果存在，则判断是否有该博客，如果没有，放入博客；如果不存在，创建并放入博客
 	 * 
 	 * @param blog
 	 * @param labelName
