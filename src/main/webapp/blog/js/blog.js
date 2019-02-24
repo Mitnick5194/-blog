@@ -8,6 +8,7 @@
 		main.find(".content").html(data.content)
 	});
 	function getblogbyid(id,callback){
+		var loading = $.showloading("加载中")
 		$.ajax({
 			type: 'post',
 			data: {
@@ -17,6 +18,7 @@
 			success: function(data){
 				if(data.code == 200){
 					typeof callback === 'function' && callback(data.data);
+					loading.hide();
 				}
 			},
 			fail: function(e){

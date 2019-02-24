@@ -58,7 +58,7 @@
 			</div>
 	</div>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/js/jquery-1.9.1.js"></script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/common/mommon.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/common/common.js"></script>
 	<script type="text/temp" id="iBlogTemp">
 	</script>
 	<script>
