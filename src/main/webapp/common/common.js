@@ -10,11 +10,11 @@
 	})
 
 	$.extend($,{
-		showToast: function(msg,timeout,callback){
-			showmsg(msg);
+		showToast: function(msg,delay,callback){
+			showmsg(msg,delay,callback);
 		},
-		showloading: function(msg,timeout,callback){
-			return showloading(msg);
+		showloading: function(msg,delay,callback){
+			return showloading(msg,delay,callback);
 		}
 	})
 
@@ -35,14 +35,19 @@
 	}
 
 
-	/**交互提示框*/
+	/**交互提示框，注意，每一时刻只能显示一种，如果同时出现两种，则第一种会隐藏，如loading中需要显示showToast
+	* 则loading自动隐藏
+	*/
 	function showmsgExt(options){
-		var opts = $.extend({
+	var opts = $.extend({
 		msg: '',//显示的内容
 		delay: 0,//消失时间，默认不消失
 		icon: 'none',//图标，支持 succ loading warming
 	},options)
-
+	var instance = $.MsgInstance;
+	if(instance){ //当已经有显示框了，先把它隐藏了，在构造新的
+		instance.hide();
+	}
 	/*var mark = $("<div>").addClass("show-msg-mark");
 	mark.appendTo("BODY");*/
 	var modal = $("<div/>").addClass("show-msg-modal");
@@ -97,9 +102,7 @@
 	var delay = opts.delay;
 	if(delay > 0){
 		setTimeout(function(){
-			hide(function(){
-				destory();
-			});
+			hide();
 		},delay)
 	}
 	var callbacks = options.callbacks ||{};
@@ -110,13 +113,17 @@
 	}
 
 	function hide(callback){
+		if(!dialog)
+			return;
 		dialog.removeClass("modal-dialog-show");
 		dialog.addClass("modal-dialog-hide");
 		setTimeout(function(){
 			dialog && dialog.hide();
 			modal && modal.hide();
+			destory();
+			$.MsgInstance = null;//消除实例
 			typeof callback=== "function" && callback();
-			typeof callbacks["hide"] === "function" && addCallback["hide"]();
+			typeof callbacks["hide"] === "function" && callbacks["hide"]();
 		},200)
 	}
 
@@ -125,8 +132,20 @@
 		modal.show();
 		dialog.show();
 		typeof callback === "function" && callback();
-		typeof addCallback["show"] === "function" && addCallback["show"]();
+		typeof callbacks["show"] === "function" && callbacks["show"]();
 	}
+
+	function destory(){
+		dialog.remove();
+		modal.remove();
+		content.remove();
+		dialog = null;
+		modal = null;
+		content = null;
+		$.MsgInstance = null;
+		typeof callbacks["destory"] === "function" && callbacks["destory"]();
+	}
+
 
 	this.getModal = function(){
 		return modal;
@@ -140,15 +159,10 @@
 		hide(callback);
 	}
 	this.destory = function(){
-		hide();
-		dialog.remove();
-		modal.remove();
-		content.remove();
-		dialog = null;
-		modal = null;
-		content = null;
-		typeof addCallback["destory"] === "function" && addCallback["destory"]();
+		destory();
 	}
+	//$.MsgType = opts.icon == 'none' ? 'loading' : opts.icon;
+	$.MsgInstance = this; //保存一下实例，当下一个实例进来时，判断当前是否已经存在实例，存在则先销毁
 }
 
 /**

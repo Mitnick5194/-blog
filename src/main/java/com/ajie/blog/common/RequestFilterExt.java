@@ -36,26 +36,30 @@ import com.ajie.web.RequestFilter;
  */
 public class RequestFilterExt extends RequestFilter implements Worker {
 	private static final Logger logger = LoggerFactory.getLogger(RequestFilterExt.class);
-	private static final int TYPE_BACK = 1;
-	private static final int TYPE_CALLBACK = 2;
-
+	/** 命令类型--执行备份 */
+	private static final int TYPE_BACKUP = 1;
+	/** 命令类型 -- 执行回滚 */
+	private static final int TYPE_ROLLBACK = 2;
+	public static final String[] TABLE_HEADER = { "key\t", "count\t", "ip\t", "date\t", "address\n" };
 	/** 访问记录 key是ip去除. */
 	private Map<String, Access> accessRecord;
+	/** 制表符ASCII码 \t */
+	public static final byte HT = 9;
+	/** 换行符ASCII码 \n */
+	public static final byte LR = 10;
+	/** 归位符ASCII码 \r */
+	public static final byte CR = 13;
+
 	/** 远程命令服务 */
 	private RemoteCmd cmd;
-	/** 制表符ascii码 */
-	public static final char HT = 9;
-
 	/** 访问记录的文件路径 */
 	private String path;
-
-	public static final String[] TABLE_HEADER = { "key", "count", "ip", "date", "address" };
 
 	public RequestFilterExt() {
 		accessRecord = new HashMap<String, Access>();
 		String ymd = TimeUtil.formatYMD(new Date());
 		TimingTask.createTimingTask("access-info-save", this, TimeUtil.parse(ymd + " 00:10"),
-				2 * 60 * 1000);// 没小时
+				2 * 60 * 1000);// 每小时
 	}
 
 	public void setRemoteCmd(RemoteCmd cmd) {
@@ -99,45 +103,90 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		}
 
 		// 备份
-		backup(path, TYPE_BACK);
+		backup(path, TYPE_BACKUP);
+		FileChannel channel = null;
+		RandomAccessFile raf = null;
 		try {
 			File file = new File(path);
-			RandomAccessFile ac = new RandomAccessFile(file, "rw");
-			Map<String, Access> map = loadFile(ac);
-			ac.seek(0);
+			raf = new RandomAccessFile(file, "rw");
+			Map<String, Access> map = loadFile(raf);
+			raf.seek(0);
 			merge(map);
 			// 将合并的记录写入文件
-			FileChannel channel = ac.getChannel();
-			ByteBuffer buffer = ByteBuffer.allocate(1024);
+			channel = raf.getChannel();
+			ByteBuffer buffer = ByteBuffer.allocate(512);
+			writeHeader(channel, buffer);
 			Iterator<Entry<String, Access>> it = map.entrySet().iterator();
-			StringBuilder sb = new StringBuilder();
 			while (it.hasNext()) {
 				buffer.clear();
-				sb.delete(0, sb.length());
 				Entry<String, Access> next = it.next();
 				Access access = next.getValue();
-				sb.append(access.getKey());
-				sb.append("	");
-				sb.append(access.getCount());
-				sb.append("	");
-				sb.append(access.getIp());
-				sb.append("	");
+				buffer.put(access.getKey().getBytes());
+				buffer.put(HT);
+				buffer.put(String.valueOf(access.getCount()).getBytes());
+				buffer.put(HT);
+				buffer.put(access.getIp().getBytes());
+				buffer.put(HT);
 				Date date = access.getDate();
 				if (null == date) {
 					date = new Date();
 				}
-				sb.append(TimeUtil.formatDate(date));
-				sb.append("	");
-				sb.append(access.getAddress());
-				buffer.put(sb.toString().getBytes());
+				buffer.put(TimeUtil.formatDate(date).getBytes());
+				buffer.put(HT);
+				String address = access.getAddress();
+				if (null == address) {
+					address = "";
+				}
+				buffer.put(address.getBytes());
+				buffer.put(CR);
+				buffer.put(LR);
+				buffer.flip();
 				channel.write(buffer);
 			}
+			clearRecord();
+			logger.info("访问记录已同步至文件，时间：" + new Date());
 		} catch (Exception e) {
 			logger.error("访问记录写入文件失败", e);
 			logger.info("正在执行回滚操作");
-			backup(path, TYPE_CALLBACK);// 回滚
+			backup(path, TYPE_ROLLBACK);// 回滚
+		} finally {
+			try {
+				channel.close();
+				raf.close();
+			} catch (IOException e) {
+			}
+
 		}
 
+	}
+
+	/**
+	 * 表头
+	 * 
+	 * @param channel
+	 * @param buffer
+	 */
+	private void writeHeader(FileChannel channel, ByteBuffer buffer) {
+		if (null == channel || null == buffer)
+			return;
+		for (int i = 0; i < TABLE_HEADER.length; i++) {
+			buffer.clear();
+			String item = TABLE_HEADER[i];
+			buffer.put(item.getBytes());
+			if (i == TABLE_HEADER.length - 1) {
+				buffer.put(CR);
+				buffer.put(LR);
+			} else {
+				buffer.put(HT);
+			}
+			buffer.flip();
+			try {
+				channel.write(buffer);
+			} catch (IOException e) {
+				logger.error("", e);
+			}
+
+		}
 	}
 
 	/**
@@ -151,10 +200,10 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		if (null == cmd) {
 			return;
 		}
-		if (type == TYPE_BACK) {
+		if (type == TYPE_BACKUP) {
 			String comand = "mv " + path + " " + path + ".bak";
 			cmd.cmd(comand);
-		} else if (type == TYPE_CALLBACK) {
+		} else if (type == TYPE_ROLLBACK) {
 			String comand = "rm " + path + ".bak";
 			cmd.cmd(comand);
 		} else {
@@ -163,11 +212,23 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 	}
 
 	/**
+	 * 将内存的访问记录清除
+	 */
+	private void clearRecord() {
+		if (accessRecord.isEmpty())
+			return;
+		accessRecord.clear();
+	}
+
+	/**
 	 * 将内存中的值合并到map，如果map已经存在该值，则更新状态，如果没有，则添加
 	 * 
 	 * @param map
 	 */
 	private void merge(Map<String, Access> map) {
+		if (null == map) {
+			map = new HashMap<String, Access>();
+		}
 		Iterator<Entry<String, Access>> iterator = accessRecord.entrySet().iterator();
 		while (iterator.hasNext()) {
 			Entry<String, Access> next = iterator.next();
@@ -175,7 +236,7 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 			Access access = map.get(key);
 			if (null == access) {
 				// 没有，添加
-				map.put(key, access);
+				map.put(key, accessRecord.get(key));
 			} else {
 				// 已经存在了，将内存中的记录的访问值加上文件中的访问值
 				access.setCount(access.getCount() + map.get(key).getCount());
@@ -196,48 +257,13 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		String key = ip.replaceAll("\\.", "");// 去除“.”
 		Access access = accessRecord.get(key);
 		if (null == access) {
-			Access acc = new Access(key, 0, ip);
+			Access acc = new Access(key, 1, ip);
 			accessRecord.put(key, acc);
 			acc.setDate(new Date());
 			acc.setAddress("");
 			return;
 		}
 		access.setCount(access.getCount() + 1);
-	}
-
-	public static void main(String[] args) {
-		URL url = Thread.currentThread().getContextClassLoader().getResource("access-record.txt");
-		File file = new File(url.getPath());
-		RandomAccessFile ac = null;
-		try {
-			ac = new RandomAccessFile(file, "rw");
-			String readLine = ac.readLine();
-			byte[] bytes = readLine.getBytes();
-			System.out.println(new String(readLine.getBytes("ISO-8859-1"), "utf-8"));
-			System.out.println(new String(bytes, "UTF-8"));
-			for (int i = 0; i < bytes.length; i++) {
-				byte b = bytes[i];
-				if (b == HT) {
-					System.out.println("制表符");
-				}
-			}
-			/*FileChannel channel = ac.getChannel();
-			ByteBuffer buffer = ByteBuffer.allocate((int) ac.length());
-			channel.read(buffer);
-			ac.readLine();
-			buffer.put("ajie".getBytes());
-			buffer.flip();
-			System.out.println(new String(buffer.array()));*/
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				ac.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-
 	}
 
 	/**
@@ -250,10 +276,12 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		if (null == file)
 			return null;
 		Map<String, Access> map = new HashMap<String, Access>();
-		String line = null;
 		try {
+			String line = file.readLine();// 先把第一行表头读掉
 			// 分析每一行
 			while (null != (line = file.readLine())) {
+				if ("".equals(line))
+					continue;
 				byte[] bytes = line.getBytes();
 				int cursor = 0;
 				int preIdx = 0;

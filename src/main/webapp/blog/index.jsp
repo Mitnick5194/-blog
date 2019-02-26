@@ -7,9 +7,9 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width , initial-scale=1,maximum-scale=1.0, user-scalable=0">
 <title>博客专栏</title>
- <link href="${ pageContext.request.contextPath }/css/common.css" rel="stylesheet" type="text/css">
- <link href="${ pageContext.request.contextPath }/common/common.css" rel="stylesheet" type="text/css">
-<link href="${ pageContext.request.contextPath }/blog/css/index.css" rel="stylesheet" type="text/css">
+ <link href="${ pageContext.request.contextPath }/${serviceId}/common/common.css" rel="stylesheet" type="text/css">
+ <link href="${ pageContext.request.contextPath }/${serviceId}/css/common.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/${serviceId}/blog/css/index.css" rel="stylesheet" type="text/css">
 
 <style type="text/css">
 
@@ -66,9 +66,9 @@
 		</section>
 	</script>
 	<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/js/jquery-1.9.1.js"></script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/common/common.js"></script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/blog/js/index.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serviceId}/js/jquery-1.9.1.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serviceId}/common/common.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serviceId}/blog/js/index.js"></script>
 	<script type="text/javascript">
 	/* wx.config({
 	    debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
