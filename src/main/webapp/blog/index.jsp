@@ -12,7 +12,6 @@
 <link href="${ pageContext.request.contextPath }/${serviceId}/blog/css/index.css" rel="stylesheet" type="text/css">
 
 <style type="text/css">
-
 </style>
 </head>
 <body>
@@ -44,7 +43,15 @@
 			</div>
 			<div class="blogs" id="iBlogs">
 			</div>
-			<div></div>
+			<div class="qr-code">
+				<div>关注公众号和小程序，获取获取最新状态</div>
+				<div>
+					<img src="${ pageContext.request.contextPath }/${serviceId}/images/my_wxgz_qrcode.jpg" />
+				</div>
+				<div>
+					<img src="${ pageContext.request.contextPath }/${serviceId}/images/my_wxapp_code.jpg" />
+				</div>
+			</div>
 		</div>
 	</div>
 	<jsp:include page="/footer.jsp"></jsp:include>
@@ -65,17 +72,17 @@
 			</div>
 		</section>
 	</script>
-	<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
+	<!-- <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script> -->
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serviceId}/js/jquery-1.9.1.js"></script>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serviceId}/common/common.js"></script>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serviceId}/blog/js/index.js"></script>
 	<script type="text/javascript">
-	/* wx.config({
+	/*  wx.config({
 	    debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
 	    appId: 'wx207d32dbbf52e1c1', // 必填，公众号的唯一标识
-	    timestamp: 1550929992769, // 必填，生成签名的时间戳
-	    nonceStr: '6fdff7c8-1495-41b5-93ed-f33f7264509b', // 必填，生成签名的随机串
-	    signature: '6935a0da8fc92fe3a6dfd42f65fcc5bd50e52b4f',// 必填，签名
+	    timestamp: 1551168970069, // 必填，生成签名的时间戳
+	    nonceStr: 'fad3e0e9-40a1-4116-aa87-40e5adf521bd', // 必填，生成签名的随机串
+	    signature: '433bc34eed5863ce379ac6673c75c9583696c5a6',// 必填，签名
 	    jsApiList: ["updateTimelineShareData","updateAppMessageShareData"] // 必填，需要使用的JS接口列表
 	});
 	wx.error(function(res){
@@ -102,7 +109,7 @@
 	    		alert(res)
 	    	}
 	    	});
-	}); */
+	});  */
 	
 	function navigatorTo(ele){
 		var _this = $(ele);

@@ -20,13 +20,15 @@
 		<property name="encoding" value="utf-8" />
 		<property name="mode" value="intercept" />
 		<property name="redisClient" ref="redisClient" />
-		<property name="remoteCmd" ref="remoteCmd"></property>
+		<property name="remoteCmd" ref="remoteCmd" />
+		<property name="resourceService" ref="resourceService" />
 		<property name="uriList">
 			<list>
 				<value>*addblog*</value>
 			</list>
 		</property>
 		<property name="ssoHost" value="${sso-host}" />
+		<property name="path" value="${access-record-path}" />
 	</bean>
 
 	<bean id="userService" name="userService"
@@ -56,6 +58,12 @@
 		<constructor-arg index="0" ref="connectConfig" />
 		<constructor-arg index="1" value="asyn-blog-image-upload" />
 	</bean>
+	
+	<!-- 同步ssh会话管理服务 -->
+	<bean id="blockSshSessionMgr" class="com.ajie.chilli.remote.impl.BlockSshSessionMgr">
+		<constructor-arg index="0" ref="connectConfig" />
+		<constructor-arg index="1" value="asyn-blog-image-upload" />
+	</bean>
 
 	<!-- ssh连接配置 -->
 	<bean id="connectConfig" class="com.ajie.chilli.remote.ConnectConfig">
@@ -72,7 +80,13 @@
 		<property name="workerQueueSize" value="${ssh-workerQueueSize}" />
 	</bean>
 
+	<!-- 远程命令服务 -->
 	<bean id="remoteCmd" class="com.ajie.chilli.remote.impl.RemoteCmdImpl">
-		<constructor-arg index="0" ref="sshSessionMgr" />
+		<constructor-arg index="0" ref="blockSshSessionMgr" />
+	</bean>
+
+	<!-- 资源服务接口 -->
+	<bean id="resourceService" class="com.ajie.resource.impl.RemoteResourceServiceImpl">
+		<property name="resourceURL" value="${resource-host}" />
 	</bean>
 </beans>

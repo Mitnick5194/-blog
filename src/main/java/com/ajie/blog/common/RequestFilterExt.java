@@ -11,6 +11,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -21,11 +24,13 @@ import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.ajie.api.ip.IpQueryVo;
 import com.ajie.chilli.remote.RemoteCmd;
 import com.ajie.chilli.remote.exception.RemoteException;
 import com.ajie.chilli.support.TimingTask;
 import com.ajie.chilli.support.Worker;
 import com.ajie.chilli.utils.TimeUtil;
+import com.ajie.resource.ResourceService;
 import com.ajie.web.RequestFilter;
 
 /**
@@ -49,11 +54,15 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 	public static final byte LR = 10;
 	/** 归位符ASCII码 \r */
 	public static final byte CR = 13;
-
 	/** 远程命令服务 */
 	private RemoteCmd cmd;
+	/** 资源服务 */
+	private ResourceService resourceService;
 	/** 访问记录的文件路径 */
 	private String path;
+	/** 线程池 */
+	ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 50, 10, TimeUnit.SECONDS,
+			new ArrayBlockingQueue<Runnable>(5), new ThreadPoolExecutor.DiscardPolicy());
 
 	public RequestFilterExt() {
 		accessRecord = new HashMap<String, Access>();
@@ -78,6 +87,14 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		return path;
 	}
 
+	public void setResourceService(ResourceService service) {
+		this.resourceService = service;
+	}
+
+	public ResourceService getResourceService() {
+		return resourceService;
+	}
+
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
@@ -95,15 +112,16 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		if (accessRecord.isEmpty())
 			return;
 		String path = this.path;
-		if (null == path) {
+		// path为空或为本机的情况
+		if (null == path || isNative()) {
 			// 如果没有，则在classpath中找，但是这样很危险，每次部署都会被覆盖
 			URL url = Thread.currentThread().getContextClassLoader()
 					.getResource("access-record.txt");
 			path = url.getPath();
+		} else {
+			// 非本机或本地进行备份
+			backup(path, TYPE_BACKUP);
 		}
-
-		// 备份
-		backup(path, TYPE_BACKUP);
 		FileChannel channel = null;
 		RandomAccessFile raf = null;
 		try {
@@ -144,7 +162,7 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 				channel.write(buffer);
 			}
 			clearRecord();
-			logger.info("访问记录已同步至文件，时间：" + new Date());
+			logger.info("访问记录已同步至文件");
 		} catch (Exception e) {
 			logger.error("访问记录写入文件失败", e);
 			logger.info("正在执行回滚操作");
@@ -158,6 +176,17 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 
 		}
 
+	}
+
+	/** 判断是否为本机或本地 */
+	private boolean isNative() {
+		if (null == serviceId)
+			return true;
+		if ("".equals(serviceId))
+			return true;
+		if ("255".equals(serviceId))
+			return true;
+		return false;
 	}
 
 	/**
@@ -196,16 +225,37 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 	 * @throws RemoteException
 	 */
 	private void backup(String path, int type) throws RemoteException {
-		path = "/var/www/temp/access-record.txt";
 		if (null == cmd) {
 			return;
 		}
+		final RemoteCmd cmd = this.cmd;
 		if (type == TYPE_BACKUP) {
-			String comand = "mv " + path + " " + path + ".bak";
-			cmd.cmd(comand);
+			final String comand = "cp  " + path + " " + path + ".bak";
+			// 因为remoteCmd是使用阻塞会话，这里手动使用异步处理
+			executor.execute(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						cmd.cmd(comand);
+					} catch (RemoteException e) {
+						logger.error("访问记录备份失败", e);
+					}
+				}
+			});
+
 		} else if (type == TYPE_ROLLBACK) {
-			String comand = "rm " + path + ".bak";
-			cmd.cmd(comand);
+			final String comand = "rm " + path + ".bak";
+			executor.execute(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						cmd.cmd(comand);
+					} catch (RemoteException e) {
+						logger.error("访问备份删除失败", e);
+					}
+				}
+			});
+
 		} else {
 			throw new RemoteException("不支持的操做类型,path:" + path + " type" + type);
 		}
@@ -257,13 +307,22 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		String key = ip.replaceAll("\\.", "");// 去除“.”
 		Access access = accessRecord.get(key);
 		if (null == access) {
-			Access acc = new Access(key, 1, ip);
-			accessRecord.put(key, acc);
-			acc.setDate(new Date());
-			acc.setAddress("");
-			return;
+			access = new Access(key, 1, ip);
 		}
+		accessRecord.put(key, access);
+		access.setDate(new Date());
+		access.setAddress("");
 		access.setCount(access.getCount() + 1);
+		final Access acc = access;
+		// 异步查询ip地址
+		executor.execute(new Runnable() {
+			@Override
+			public void run() {
+				IpQueryVo vo = resourceService.queryIpAddress(acc.getIp(), 0);
+				String address = vo.getRegion() + "省" + vo.getCity();
+				acc.setAddress(address);
+			}
+		});
 	}
 
 	/**
@@ -272,7 +331,7 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 	 * @param file
 	 * @return
 	 */
-	private Map<String, Access> loadFile(RandomAccessFile file) {
+	static private Map<String, Access> loadFile(RandomAccessFile file) {
 		if (null == file)
 			return null;
 		Map<String, Access> map = new HashMap<String, Access>();
