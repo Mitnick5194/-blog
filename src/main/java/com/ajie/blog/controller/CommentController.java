@@ -43,21 +43,44 @@ public class CommentController {
 	private UserService userService;
 
 	@ResponseBody
-	@RequestMapping("getcommentbyblog")
-	public ResponseResult getcommentbyblog(HttpServletRequest request, HttpServletResponse response) {
+	@RequestMapping("getcommentsbyblog")
+	public ResponseResult getcommentsbyblog(HttpServletRequest request, HttpServletResponse response) {
 		int id = Toolkits.toInt(request.getParameter("blogId"), 0);
 		List<TbComment> comments = commentService.getComments(id);
 		List<CommentVo> list = new TransList<CommentVo, TbComment>(comments) {
 			@Override
 			public CommentVo trans(TbComment v) {
 				CommentVo vo = new CommentVo(v);
-				TbUser user = userService.getUserById(v.getUserid());
-				vo.setUserName(user.getName());
-				vo.setUserHeader(user.getHeader());
 				return vo;
 			}
 		};
 		return ResponseResult.newResult(ResponseResult.CODE_SUC, list);
+	}
+
+	/**
+	 * 添加一条评论
+	 * 
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping("createcomment")
+	public ResponseResult createcomment(HttpServletRequest request, HttpServletResponse response) {
+		TbUser user = userService.getUser(request);
+		if (null == user) {
+			return ResponseResult.newResult(ResponseResult.CODE_SESSION_INVALID, "会话过期，请重新登录");
+		}
+		int blogId = Toolkits.toInt(request.getParameter("blogId"), 0);
+		String content = request.getParameter("content");
+
+		try {
+			commentService.createComment(content, blogId, user.getId());
+			return ResponseResult.newResult(ResponseResult.CODE_SUC, "发布成功");
+		} catch (CommentException e) {
+			logger.warn("评论失败", e);
+			return ResponseResult.newResult(ResponseResult.CODE_ERR, e.getMessage());
+		}
 	}
 
 	/**

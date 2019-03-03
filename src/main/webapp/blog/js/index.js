@@ -40,7 +40,7 @@
 				loadtags();
 			},
 			fail: function(e){
-				console.log(e);
+				$.showToast(e)
 			},
 			complete: function(){
 				
@@ -67,7 +67,7 @@
 						sb.push("<div>"+tag.name+"（"+tag.blogCount+"）</div>");
 						if(i == 9){
 							//显示10个
-							sb.push("<div id='iMoreTags'>更多标签</div>");
+							sb.push("<div class='moreTags'>更多标签</div>");
 							break;
 						}
 					}
@@ -76,7 +76,7 @@
 				}
 			},
 			fail: function(e){
-				console.log(e);
+				$.showToast(e)
 			},
 			complete: function(){
 				
@@ -85,13 +85,41 @@
 		})
 	}
 	
-	$("#iBlogs").on("click" , ".title" , function(){
+	$("#iBlogs").on("click" , "section" , function(e){
+		e.stopPropagation(); //禁止冒泡
 		var id = $(this).attr("data-id");
-		window.open("blog.do?id="+id);
+		location.href = "blog.do?id="+id;
+		//window.open("blog.do?id="+id);
 	})
 	
-	$("#iMoreTags").on("click",function(){
-		window.open("moretags.do");
+	$("#iListTags").on("click","div",function(e){
+		e.stopPropagation(); //禁止冒泡
+		var _this = $(this);
+		if(_this.hasClass("moreTags")){
+			window.open("moretags.do");
+		}
+	})
+	
+	var tags = $("#iTags");
+	//点击标签 只有移动设备才有标签按钮，所以可以直接监听touchstart,方便做收起操作
+	$("#iSlider").on("touchstart",function(e){
+			var e = e || window.event;
+			e.stopPropagation(); //禁止冒泡
+			var classes = iTags.classList;
+			if(tags.hasClass("active")){
+				tags.removeClass("active");
+			}else{
+				tags.addClass("active");
+			}
+		});
+	//移动端移动收起标签
+	$(document).on("touchstart",function(e){
+		if (!tags.hasClass("active")) {
+			return;
+		}
+		if (tags[0] != e.target && tags.has(e.target).length == 0) {
+			tags.removeClass("active");
+		}
 	})
 	
 })()

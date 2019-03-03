@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
+import com.ajie.api.weixin.vo.JsConfig;
 import com.ajie.blog.blog.BlogService;
 import com.ajie.blog.blog.RedisBlog;
 import com.ajie.blog.blog.exception.BlogException;
@@ -36,9 +37,11 @@ import com.ajie.chilli.picture.PictureException;
 import com.ajie.chilli.picture.PictureService;
 import com.ajie.chilli.utils.TimeUtil;
 import com.ajie.chilli.utils.Toolkits;
-import com.ajie.dao.mapper.TbBlogMapper;
+import com.ajie.chilli.utils.common.JsonUtils;
 import com.ajie.dao.pojo.TbBlog;
 import com.ajie.dao.pojo.TbUser;
+import com.ajie.resource.ResourceService;
+import com.ajie.resource.WeixinResource;
 import com.ajie.sso.user.UserService;
 
 /**
@@ -63,9 +66,8 @@ public class BlogController {
 	private PictureService pictureService;
 	@Resource
 	private RedisClient redisClient;
-
 	@Resource
-	private TbBlogMapper mapper;
+	private ResourceService resource;
 
 	/**
 	 * 首页路径
@@ -94,12 +96,47 @@ public class BlogController {
 	 */
 	@RequestMapping("/blog.do")
 	public String blog(HttpServletRequest request, HttpServletResponse response) {
+		TbUser user = userService.getUser(request);
+		if (null != user) {
+			request.setAttribute("username", user.getName());
+			request.setAttribute("userheader", user.getHeader());
+			request.setAttribute("userid", user.getId());
+		}
 		int id = Toolkits.toInt(request.getParameter("id"), 0);
 		// 更新博客的浏览数
-		RedisBlog vo = new RedisBlog(redisClient, id);
-		vo.updateReadNum(1);
+		RedisBlog redisBlog = new RedisBlog(redisClient, id);
+		redisBlog.updateReadNum(1);
+		// 获取微信配置
+		WeixinResource wx = resource.getWeixinResource();
+		JsConfig config = null;
+		if (null != wx) {
+			config = wx.getJsConfiig();
+			if (null != config) {
+				String url = getRequestUrl(request);
+				config.sign(url);
+				request.setAttribute("config", JsonUtils.toJSONString(config));
+			}
+		}
+		if (null == config) {
+			request.setAttribute("config", "");
+		}
 		request.setAttribute("id", id);
 		return prefix + "blog";
+	}
+
+	/**
+	 * 请求链接，包含参数部分
+	 * 
+	 * @param request
+	 * @return
+	 */
+	private String getRequestUrl(HttpServletRequest request) {
+		String url = request.getRequestURL().toString();
+		String query = request.getQueryString();
+		if (null != query) {
+			url += "?" + query;
+		}
+		return url;
 	}
 
 	/**

@@ -8,9 +8,11 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import com.ajie.blog.blog.BlogService;
+import com.ajie.blog.blog.RedisBlog;
 import com.ajie.blog.blog.exception.BlogException;
 import com.ajie.blog.comment.CommentException;
 import com.ajie.blog.comment.CommentService;
+import com.ajie.chilli.cache.redis.RedisClient;
 import com.ajie.dao.mapper.TbCommentMapper;
 import com.ajie.dao.pojo.TbBlog;
 import com.ajie.dao.pojo.TbComment;
@@ -32,6 +34,8 @@ public class CommentServiceImpl implements CommentService {
 	private TbCommentMapper mapper;
 	@Resource
 	private BlogService blogService;
+	@Resource
+	private RedisClient redisClient;
 
 	@Override
 	public TbComment createComment(String content, int blogId, int userId) throws CommentException {
@@ -41,6 +45,9 @@ public class CommentServiceImpl implements CommentService {
 		int ret = mapper.insert(comment);
 		if (ret != 1)
 			throw new CommentException("评论失败");
+		// 更新评论数
+		RedisBlog redisBlog = new RedisBlog(redisClient, blogId);
+		redisBlog.updateCommentNum(1);
 		return comment;
 	}
 
@@ -94,6 +101,7 @@ public class CommentServiceImpl implements CommentService {
 		List<TbComment> comments = mapper.selectByExample(ex);
 		if (null == comments)
 			return Collections.emptyList();
+		Collections.sort(comments,CREATE_DATE);
 		return comments;
 	}
 
@@ -105,6 +113,7 @@ public class CommentServiceImpl implements CommentService {
 		List<TbComment> comments = mapper.selectByExample(ex);
 		if (null == comments)
 			return Collections.emptyList();
+		Collections.sort(comments,CREATE_DATE);
 		return comments;
 	}
 

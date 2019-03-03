@@ -36,7 +36,7 @@ public class RedisBlog {
 			vo.setCollectnum(blogVo.getCollectnum());
 			vo.setReadnum(blogVo.getReadnum());
 			vo.setPraisenum(blogVo.getPraisenum());
-			vo.setCommentnum(vo.getCommentnum());
+			vo.setCommentnum(blogVo.getCommentnum());
 		} catch (RedisException e) {
 			logger.warn("从redis缓存中获取RedisBlogVo失败", e);
 		}

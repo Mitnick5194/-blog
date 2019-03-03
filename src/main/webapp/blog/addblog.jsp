@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width , initial-scale=1">
 <title>${empty id ? '发布博客': '编辑博客' }</title>
-<link href="${ pageContext.request.contextPath }/css/common.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/${serverId}/css/global.css" rel="stylesheet" type="text/css">
 <style type="text/css">
 .container{margin-bottom: 50px;}
 .nav{width: 90%; margin: 0 auto; height: 40px;background: #eee;}
@@ -56,9 +56,9 @@
 			</div>
 		</div>
 	</div>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/js/jquery-1.9.1.js"></script>
-	 <script src="${ pageContext.request.contextPath }/ckeditor/ckeditor.js"></script>
-     <script type="text/javascript" src="${ pageContext.request.contextPath }/blog/js/addblog.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/js/jquery-1.9.1.js"></script>
+	 <script src="${ pageContext.request.contextPath }/${serverId }/ckeditor/ckeditor.js"></script>
+     <script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/blog/js/addblog.js"></script>
       <script>
           
 	   </script>

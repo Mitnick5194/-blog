@@ -1,5 +1,6 @@
 package com.ajie.blog.comment;
 
+import java.util.Comparator;
 import java.util.List;
 
 import com.ajie.chilli.common.KVpair;
@@ -24,6 +25,14 @@ public interface CommentService {
 	/** 评论状态 -- 已删除 */
 	static public final KVpair STATE_DELETE = KVpair.valueOf("已删除", MARK_STATE_DELETE);
 
+	/** 按照创建时间排序 */
+	public static final Comparator<TbComment> CREATE_DATE = new Comparator<TbComment>() {
+		@Override
+		public int compare(TbComment o1, TbComment o2) {
+			return o2.getCreatetime().compareTo(o1.getCreatetime());
+		}
+	};
+	
 	/**
 	 * 添加一条评论
 	 * 

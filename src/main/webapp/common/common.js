@@ -1,6 +1,18 @@
+/**
+ *
+ * jquery扩展插件
+ *
+ *
+ *
+ *
+ * @autor niezhenjie
+ *
+ */
 (function(){
+	//body需要设置html和body height为100%；否则页面大于可是界面body的高度是页面的总高度
 	var BODY = $(document.body);
 	var DOC = $(document);
+	var WIN = $(window);
 	$.extend($.fn , {
 		getWindow: function(){
 			return new WindowPlugin(this);
@@ -11,6 +23,12 @@
 
 	$.extend($,{
 		showToast: function(msg,delay,callback){
+			var arg = arguments[1];
+			//如果第二个参数是函数，则第二个参数就是回调，delay给一个默认值
+			 if(typeof arg === 'function'){
+			 	callback = arg;
+			 	delay = 1000;
+			 }
 			showmsg(msg,delay,callback);
 		},
 		showloading: function(msg,delay,callback){
@@ -22,7 +40,8 @@
 		showmsgExt({
 			msg: msg,
 			delay: delay || 1000,
-			icon: 'none'
+			icon: 'none',
+			callback: callback
 		})
 	}
 
@@ -30,7 +49,8 @@
 		return new showmsgExt({
 			msg: msg,
 			delay: delay ||0,
-			icon: 'loading'
+			icon: 'loading',
+			callback: callback
 		})
 	}
 
@@ -43,6 +63,7 @@
 		msg: '',//显示的内容
 		delay: 0,//消失时间，默认不消失
 		icon: 'none',//图标，支持 succ loading warming
+		callback: null,//隐藏回调，show一般需要手动调用，可以在调用的时候传入
 	},options)
 	var instance = $.MsgInstance;
 	if(instance){ //当已经有显示框了，先把它隐藏了，在构造新的
@@ -87,7 +108,7 @@
 			}).addClass("content-text-icon")
 		}
 	}else{
-		//loading情况
+		//showToast情况
 		content.addClass("content-text")
 		dialog.css({
 			width:"normal",
@@ -122,8 +143,9 @@
 			modal && modal.hide();
 			destory();
 			$.MsgInstance = null;//消除实例
-			typeof callback=== "function" && callback();
-			typeof callbacks["hide"] === "function" && callbacks["hide"]();
+			//先判断hide调用有没有传入callback,没有则检查callbacks，也没有则检查构造时传入的
+			(typeof callback=== "function" && callback()) || typeof callbacks["hide"] === "function" && callbacks["hide"]() || typeof opts.callback ==='function' && opts.callback();
+			
 		},200)
 	}
 
@@ -131,14 +153,14 @@
 		dialog.addClass("modal-dialog-show")
 		modal.show();
 		dialog.show();
-		typeof callback === "function" && callback();
-		typeof callbacks["show"] === "function" && callbacks["show"]();
+		//先判断hide调用有没有传入callback,没有则检查callbacks，也没有则检查构造时传入的
+			(typeof callback=== "function" && callback()) || typeof callbacks["hide"] === "function" && callbacks["hide"]();
 	}
 
 	function destory(){
-		dialog.remove();
-		modal.remove();
-		content.remove();
+		dialog && dialog.remove();
+		modal && modal.remove();
+		content && content.remove();
 		dialog = null;
 		modal = null;
 		content = null;
@@ -174,8 +196,8 @@
  	var elem = $(ele);
  	width = width || elem.width();
  	height = height || elem.height();
- 	var docWidth = $(document).width();
- 	var docHeight = $(document).height();
+ 	var docWidth = WIN.width();
+ 	var docHeight = WIN.height();
  	var left =(docWidth - width)/2;
  	var top = (docHeight - height)/2;
  	elem.css({
@@ -265,12 +287,10 @@
 			plugin.hide();
 		})
 	function center(){ //使居中
-		var height = DOC.height();
-		var width = DOC.width();
+		var height = WIN.height();
+		var width = WIN.width();
 		var dialogHeight = dialog.height();
 		var dialogWidth = dialog.width();
-		console.log(height+"  "+width);
-		console.log(dialogHeight+"  "+dialogWidth);
 		var top , left;
 		if(dialogHeight > height){
 			top = 0;

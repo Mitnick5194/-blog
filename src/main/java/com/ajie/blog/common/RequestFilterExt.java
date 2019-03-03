@@ -62,7 +62,7 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 	private String path;
 	/** 线程池 */
 	ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 50, 10, TimeUnit.SECONDS,
-			new ArrayBlockingQueue<Runnable>(5), new ThreadPoolExecutor.DiscardPolicy());
+			new ArrayBlockingQueue<Runnable>(50), new ThreadPoolExecutor.AbortPolicy());
 
 	public RequestFilterExt() {
 		accessRecord = new HashMap<String, Access>();
@@ -180,11 +180,11 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 
 	/** 判断是否为本机或本地 */
 	private boolean isNative() {
-		if (null == serviceId)
+		if (null == serverId)
 			return true;
-		if ("".equals(serviceId))
+		if ("".equals(serverId))
 			return true;
-		if ("255".equals(serviceId))
+		if ("255".equals(serverId))
 			return true;
 		return false;
 	}
@@ -318,9 +318,20 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		executor.execute(new Runnable() {
 			@Override
 			public void run() {
-				IpQueryVo vo = resourceService.queryIpAddress(acc.getIp(), 0);
-				String address = vo.getRegion() + "省" + vo.getCity();
-				acc.setAddress(address);
+				try {
+					IpQueryVo vo = resourceService.queryIpAddress(acc.getIp(), 0);
+					if (null == vo) {
+						if (logger.isTraceEnabled()) {
+							logger.trace("查询ip失败,ip:" + acc.getIp());
+						}
+						return;
+					}
+					String address = vo.getRegion() + "省" + vo.getCity();
+					acc.setAddress(address);
+				} catch (Exception e) {
+					logger.error("查询ip失败", e);
+				}
+
 			}
 		});
 	}

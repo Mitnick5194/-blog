@@ -48,7 +48,7 @@ public class BlogUtil {
 		long inteval = now.getTime() - date.getTime();
 		if (inteval < ONEHOUR) {
 			// 小于1小时 使用分钟，不足一分钟使用一分钟
-			long min = Math.round(inteval / 1000 / 60);
+			double min = Math.ceil(inteval / 1000 / 60);
 			return min + "分钟前";
 		} else if (inteval < ONEHOUR * 20) {
 			// 小于20小时，使用小时显示

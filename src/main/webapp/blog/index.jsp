@@ -6,10 +6,10 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width , initial-scale=1,maximum-scale=1.0, user-scalable=0">
-<title>博客专栏</title>
- <link href="${ pageContext.request.contextPath }/${serviceId}/common/common.css" rel="stylesheet" type="text/css">
- <link href="${ pageContext.request.contextPath }/${serviceId}/css/common.css" rel="stylesheet" type="text/css">
-<link href="${ pageContext.request.contextPath }/${serviceId}/blog/css/index.css" rel="stylesheet" type="text/css">
+<title>首页</title>
+ <link href="${ pageContext.request.contextPath }/${serverId}/common/common.css" rel="stylesheet" type="text/css">
+ <link href="${ pageContext.request.contextPath }/${serverId}/css/global.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/${serverId}/blog/css/index.css" rel="stylesheet" type="text/css">
 
 <style type="text/css">
 </style>
@@ -38,7 +38,7 @@
 
 		<div class="container">
 			<div id="iTags" class="tags-block">
-				<div class="list-group">
+				<div class="list-group " id="iListTags">
 		    	</div>
 			</div>
 			<div class="blogs" id="iBlogs">
@@ -46,18 +46,18 @@
 			<div class="qr-code">
 				<div>关注公众号和小程序，获取获取最新状态</div>
 				<div>
-					<img src="${ pageContext.request.contextPath }/${serviceId}/images/my_wxgz_qrcode.jpg" />
+					<img src="${ pageContext.request.contextPath }/${serverId}/images/my_wxgz_qrcode.jpg" />
 				</div>
 				<div>
-					<img src="${ pageContext.request.contextPath }/${serviceId}/images/my_wxapp_code.jpg" />
+					<img src="${ pageContext.request.contextPath }/${serverId}/images/my_wxapp_code.jpg" />
 				</div>
 			</div>
 		</div>
 	</div>
 	<jsp:include page="/footer.jsp"></jsp:include>
 	<script type="text/temp"  id="iBlogTemp">
-		<section>
-			<div data-id='[id]' class="title">[title]</div>
+		<section  data-id='[id]' >
+			<div class="title">[title]</div>
 			<div class="abstract-content">[abstractContent]</div>
 			<div class="extract-list">
 				<div class="list-left flex">
@@ -73,9 +73,9 @@
 		</section>
 	</script>
 	<!-- <script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script> -->
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serviceId}/js/jquery-1.9.1.js"></script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serviceId}/common/common.js"></script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serviceId}/blog/js/index.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/js/jquery-1.9.1.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/common/common.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/blog/js/index.js"></script>
 	<script type="text/javascript">
 	/*  wx.config({
 	    debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
@@ -131,14 +131,6 @@
 		location.href = url;
 	}
 	
-		iSlider.addEventListener("click",function(){
-			var classes = iTags.classList;
-			if(classes.contains("active")){
-				iTags.classList.remove("active");
-			}else{
-				iTags.classList.add("active");
-			}
-		},false);
 	</script>
 	
 </body>
