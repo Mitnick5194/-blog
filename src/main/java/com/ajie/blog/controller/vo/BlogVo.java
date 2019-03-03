@@ -36,7 +36,7 @@ public class BlogVo {
 		this.title = blog.getTitle();
 		this.createDate = BlogUtil.handleDate(blog.getCreatetime());
 		this.readNum = blog.getReadnum();
-		this.commentNum = 0;
+		this.commentNum = blog.getCommentnum();
 		this.userId = blog.getUserid();
 		this.userHeader = blog.getUserheader();
 		if(StringUtils.isEmpty(blog.getUsernickname())){

@@ -7,7 +7,7 @@
 .footer-line:after{content: '';position: absolute;width: 75%;height: 1px; background: #888;top:50%;right:0;    transform: scaleY(0.5);}
 .after-left:after{left: 0;}
 </style>
-<div class="footer-dv">
+<div class="footer-dv darkMode">
 	<div class="footer-line"></div>
 	<div class="footer-content" id="iFooter">我是有底线的</div>
 	<div class="footer-line after-left"></div>

@@ -111,6 +111,7 @@
 			success: function(data){
 				if(data.code == 200){
 					$.showToast("发布成功",1500,function(){
+						$("#iComment").val("");//清空
 						loadcomments(handleComment);
 					})
 				}else{

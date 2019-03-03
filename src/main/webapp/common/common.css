@@ -26,11 +26,11 @@
 .content-text-icon{bottom: 15px;position: absolute; padding: 0 10px; width: calc(100% - 20px);-webkit-width: calc(100% - 20px); text-align: center;color: #fff;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;}
 .show-msg-loading-content{width: 100%;position: absolute;}
 
-/*动画*/
 .modal-dialog-show{animation: modal_dialog_show  .2s    ease-in-out;}
 .modal-background-hide{animation: modal_background_hide .2s ease-in-out;animation-fill-mode: both; }
 .modal-dialog-hide{animation: modal_dialog_hide .2s ease-in-out;animation-fill-mode: both;}
 
+/*动画*/
 @keyframes  modal_dialog_show{
 	0%  {transform: scale(.5,.5);opacity:0;}
 	100% {transform: scale(1,1);opacity: 1}

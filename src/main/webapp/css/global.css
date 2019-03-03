@@ -1,10 +1,11 @@
-* {margin: 0;padding: 0;-webkit-tap-highlight-color: transparent;-webkit-touch-callout: none;}
+* {margin: 0;padding: 0;-webkit-tap-highlight-color: transparent;-webkit-touch-callout: none;-webkit-font-smoothing: none;}
 body {font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;font-size: 14px;line-height: 1.42857143;color: #3D3D3D;}
 a {text-decoration: none;}
 .floatR{float: right;}
 .flex{display: flex;}
  input,textarea,select,a:focus {outline: none;}
- 
  .color-gre {color: #3399ea;}
+ /* 使夜间模式生效，一般在节点添加.darkMode 切换夜间模式时遍历.darkMode然后添加class darkModeActive*/
+ .darkModeActive{background: #111113 !important;color: #8E8E8E !important}
 .hidden{display: none};
 .hiddenforce{display: none !important;}

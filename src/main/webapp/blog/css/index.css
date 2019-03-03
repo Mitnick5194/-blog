@@ -51,3 +51,63 @@ div {-webkit-tab-highlight-color: rgba(0,0,0,0); }
 	.tags-block{width: 250px;}
 	.qr-code{width: 250px;display: block;margin-left:30px;}
 }
+
+/* 操作菜单 */
+.operating{
+	position: fixed;
+	z-index: 9999;
+	top: 60%;
+	right: 10px;
+	width: 55px;
+	height: 55px;
+	border-radius: 10px;
+	background-color:  rgba(84,84,84,0.9);
+}
+.operating-more{
+	color: #fff;
+	width: 100%;
+	height: 100%;
+	line-height: 55px;
+	text-align: center;
+}
+
+.operating-mask{
+	position: fixed;
+	width:100%;
+	height: 100%;
+	left:0;
+	top:0;
+}
+.operating-panel{
+	position: absolute;
+	background-color:  rgba(84,84,84,0.9);
+	border-radius: 15px;
+	
+}
+
+.transform-origin-left {
+	transform-origin: left center;
+}
+
+.transform-origin-right {
+	transform-origin: right center;
+}
+
+
+.menu_dialog_show{
+	animation: menu_dialog_show .2s  ease-in-out; animation-fill-mode: both;
+}
+.menu_dialog_hide{
+	animation: menu_dialog_hide .2s ease-in-out; animation-fill-mode: both;
+	/* transform-origin: right center; */
+}
+/*动画*/
+@keyframes  menu_dialog_show{
+	0%  {transform: scale(0,0);opacity:0;}
+	100% {transform: scale(1,1);opacity: 1}
+}
+@keyframes  menu_dialog_hide{
+	0%  {transform: scale(1,1);opacity:1;}
+	100% {transform: scale(0.1,0.1);opacity: 0}
+}
+

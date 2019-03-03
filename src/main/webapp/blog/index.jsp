@@ -2,8 +2,8 @@
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <!DOCTYPE html>
-<html>
-<head>
+<html class="darkMode">
+<head >
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width , initial-scale=1,maximum-scale=1.0, user-scalable=0">
 <title>首页</title>
@@ -14,15 +14,15 @@
 <style type="text/css">
 </style>
 </head>
-<body>
-	<div class="main">
-		<div id="iSlider" class="tag-btn">
+<body class="darkMode ">
+	<div class="main ">
+		<div id="iSlider" class="tag-btn darkMode">
 			<span class="bar-icon"></span>
 			<span class="bar-icon"></span>
 			<span class="bar-icon"></span>
 			<span class="bar-icon"></span>
 		</div>
-		<div class="header-navi">
+		<div class="header-navi darkMode">
 			<div onclick="javascript:location.href='addblog.do'" class="addblog">写博客</div>
 			<div class="user-header">
 				<c:choose>
@@ -37,7 +37,7 @@
 		</div>
 
 		<div class="container">
-			<div id="iTags" class="tags-block">
+			<div id="iTags" class="tags-block darkMode">
 				<div class="list-group " id="iListTags">
 		    	</div>
 			</div>
@@ -54,9 +54,20 @@
 			</div>
 		</div>
 	</div>
+	
+<!-- 	<div class="operating">
+		<div class="operating-more">更多</div>
+	</div>
+	
+	<div class="operating-mask">
+		<div class="operating-menu">
+		
+		</div>
+	</div> -->
+	
 	<jsp:include page="/footer.jsp"></jsp:include>
 	<script type="text/temp"  id="iBlogTemp">
-		<section  data-id='[id]' >
+		<section class='darkMode'  data-id='[id]' >
 			<div class="title">[title]</div>
 			<div class="abstract-content">[abstractContent]</div>
 			<div class="extract-list">
@@ -130,6 +141,194 @@
 		
 		location.href = url;
 	}
+	
+	//true切换夜间，false切换白天
+	function toggleDarkMode(bool){
+		var toggle = typeof bool === 'boolean' ? bool : false;
+		//随便找一个节点看看是不是夜间模式
+		var isDark = $("#iSlider").hasClass("darkModeActive");
+		if(isDark == toggle){
+			return;
+		}
+		toggle ? $(".darkMode").addClass("darkModeActive") :$(".darkMode").removeClass("darkModeActive");
+		
+	}
+	
+	
+	/* 
+	
+	<div class="operating">
+		<div class="operating-more">更多</div>
+	</div>
+	
+	<div class="operating-mask">
+		<div class="operating-menu">
+		
+		</div>
+	</div>
+	*/
+	
+	
+	(function(){
+		var BODY = $(document.body);
+		var DOC = $(document);
+		var WIN = $(window);
+		var WINWIDTH = WIN.width();
+		var WINHEIGHT = WIN.height();
+		var panelWidth = WINWIDTH * 0.8;//宽度为屏幕的80%
+		if(panelWidth > 380) {
+			panelWidth = 380;//最大380px;
+		}
+		var menu = $("<div>").addClass("operating").appendTo(BODY);
+		$("<div>").addClass("operating-more").html("更多").appendTo(menu);
+		var mask = $("<div>").addClass("operating-mask").addClass("hidden").appendTo(BODY)
+		var panel = $("<div>").addClass("operating-panel").appendTo(mask);
+		panel.css({
+			width: panelWidth,
+			height: panelWidth
+		})
+		adjustPanelPosi();
+		function getPanelWidth(){
+			return panelWidth;
+		}
+		
+		function getWinWidth(){
+			return WIN.width();
+		}
+		
+		//面板根据菜单位置寻找位置
+		function adjustPanelPosi(){
+			var menupos = getMenuPosi();
+			var width = getPanelWidth();
+			var x = (getWinWidth() - width) / 2;
+			var y = menupos.top - (width / 2) + (menu.height()/2) ;
+			panel.css({
+				left: x,
+				top: y
+			})
+		}
+		
+		function getMenuPosi(){
+			var offset = menu.position();
+			var menuWidth = menu.width();
+			var x = offset.left;
+			//方向 -1表示左 1表示右边
+			var direction = -1;
+			if((WIN.width()-menuWidth) / 2 < x) {
+				direction = 1;
+			}
+			return {
+				left: offset.left,
+				top: offset.top,
+				direction: direction
+			}
+		}
+		
+		function showPanel(){
+			adjustPanelPosi();
+			var menuPosi = getMenuPosi();
+			panel.removeClass("transform-origin-left").removeClass("transform-origin-right");
+			if(menuPosi.direction == -1) {
+				//在左边
+				panel.addClass("transform-origin-left");
+			}else {
+				panel.addClass("transform-origin-right");
+			}
+			panel.addClass("menu_dialog_show");
+			mask.removeClass("hidden");
+			menu.addClass("hidden");
+		}
+		
+		function hidePanel(){
+			panel.removeClass("menu_dialog_show");
+			panel.addClass("menu_dialog_hide");
+			menu.removeClass("hidden");
+			var timing;
+			timing = setTimeout(function(){
+				mask.addClass("hidden");
+				panel.removeClass("menu_dialog_hide");
+				clearTimeout(timing);
+			},200)
+		}
+		
+		var startTime,endTime,startX,startY,endX,endY,curentX,curentY,startMenuX,startMenuY,menuWidth;
+		menu.get(0).addEventListener("touchstart",function(event){
+			var event = event || window.event;
+			event.preventDefault();//禁止页面顺着滚动
+			startTime = event.timeStamp;
+			startX = event.changedTouches[0].clientX;
+			startY = event.changedTouches[0].clientY;
+			var menuPosi = getMenuPosi();
+			startMenuX = menuPosi.left;
+			startMenuY = menuPosi.top;
+			menuWidth = menu.width();
+		},false)
+		menu.get(0).addEventListener("touchmove",function(event){
+			var event = event || window.event;
+			event.preventDefault();//禁止页面顺着滚动
+			currentX = event.changedTouches[0].clientX;
+			currentY = event.changedTouches[0].clientY;
+			var moveX = currentX - startX;
+			var moveY = currentY - startY;
+			var x = startMenuX + moveX;
+			var y = startMenuY + moveY;
+			if(x <= 0 || (x+menuWidth) >= WINWIDTH){
+				return;
+			}
+			if(y <= 0 || (y+menuWidth) >= WINHEIGHT){
+				return;
+			}
+			menu.css({
+				top: y+"px",
+				left: x+"px"
+			})
+		},false)
+		menu.get(0).addEventListener("touchend",function(event){
+			var event = event || window.event;
+			event.preventDefault();//禁止页面顺着滚动
+			endTime = event.timeStamp;
+			var interval = endTime - startTime;
+			endX = event.changedTouches[0].clientX;
+			endY = event.changedTouches[0].clientY;
+			var moveX = endX - startX;
+			var moveY = endY - startY;
+			if(interval < 200 && moveX < 5 && moveY < 5){
+				click();
+				return;
+			}
+			var menuPosi = getMenuPosi();
+			var x = 10;
+			if(menuPosi.direction == 1){
+				menu.css({
+					left: "unset",
+					right: "10px"
+				})
+			}else{
+				menu.css({
+					right: "unset",
+					left: "10px"
+				})
+			}
+		},false)
+		
+		function click(){
+			showPanel()
+		}
+		/* menu.on("click",function(e){
+			var e = e || window.event;
+			e.stopPropagation(); //禁止冒泡
+			showPanel()
+		}) */
+		mask.on("click",function(e){
+			e.stopPropagation(); //禁止冒泡
+			hidePanel();
+		})
+		
+		panel.on("click",function(e){
+			var e = e || window.event;
+			e.stopPropagation(); //禁止冒泡
+		})
+	})()
 	
 	</script>
 	
