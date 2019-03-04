@@ -175,6 +175,20 @@
 		var WIN = $(window);
 		var WINWIDTH = WIN.width();
 		var WINHEIGHT = WIN.height();
+		//菜单相对于面板的方向 -- 左
+		var DIRECT_LEFT = 1;
+		//菜单相对于面板的方向 -- 右
+		var DIRECT_RIGHT = 1<<1;
+		//菜单相对于面板的方向 -- 上
+		var DIRECT_TOP = 1<<2;
+		//菜单相对于面板的方向 -- 下
+		var DIRECT_BOTTOM = 1<<3;
+		//菜单相对于面板的方向 -- 中
+		var DIRECT_BOTTOM = 1<<4;
+		//菜单相对于面板的方向 -- 右上
+		/* var DIRECT_RIGHT_TOP = 1<<4;
+		//菜单相对于面板的方向 -- 右下
+		var DIRECT_RIGHT_BOTTOM = 1<<5; */
 		var panelWidth = WINWIDTH * 0.8;//宽度为屏幕的80%
 		if(panelWidth > 380) {
 			panelWidth = 380;//最大380px;
@@ -201,7 +215,9 @@
 			var menupos = getMenuPosi();
 			var width = getPanelWidth();
 			var x = (getWinWidth() - width) / 2;
-			var y = menupos.top - (width / 2) + (menu.height()/2) ;
+			//var y = menupos.top - (width / 2) + (menu.height()/2) ;
+			//y也居中
+			var y = (WINHEIGHT - width) / 2;
 			panel.css({
 				left: x,
 				top: y
@@ -211,16 +227,35 @@
 		function getMenuPosi(){
 			var offset = menu.position();
 			var menuWidth = menu.width();
-			var x = offset.left;
-			//方向 -1表示左 1表示右边
-			var direction = -1;
-			if((WIN.width()-menuWidth) / 2 < x) {
-				direction = 1;
+			var left = offset.left;
+			var top = offset.top
+			//相对于面板的方向
+			var direction = 0;
+			if((WIN.width()-menuWidth) / 2 > left) {
+				direction |= DIRECT_LEFT ;
+			}else{
+				direction |= DIRECT_RIGHT;
+			}
+			var panelPosi = getPanelPosi();
+			if(panelPosi.top >= (top + menuWidth)){
+				direction |= DIRECT_TOP;
+			}else if(panelPosi.top + panel.height() < top){
+				direction |= DIRECT_BOTTOM;
 			}
 			return {
-				left: offset.left,
-				top: offset.top,
+				left: left,
+				top: top,
 				direction: direction
+			}
+		}
+		
+		function getPanelPosi(){
+			var width = getPanelWidth();
+			var top = (WINHEIGHT - width) / 2;
+			var left = (WINWIDTH - width) / 2;
+			return {
+				left: left,
+				top: top,
 			}
 		}
 		
@@ -228,11 +263,26 @@
 			adjustPanelPosi();
 			var menuPosi = getMenuPosi();
 			panel.removeClass("transform-origin-left").removeClass("transform-origin-right");
-			if(menuPosi.direction == -1) {
+			panel.removeClass("transform-origin-left-top").removeClass("transform-origin-left-bottom");
+			panel.removeClass("transform-origin-right-top").removeClass("transform-origin-right-bottom")
+			if((menuPosi.direction & DIRECT_LEFT) == DIRECT_LEFT) {
 				//在左边
-				panel.addClass("transform-origin-left");
-			}else {
-				panel.addClass("transform-origin-right");
+				if((menuPosi.direction & DIRECT_TOP) == DIRECT_TOP){
+					panel.addClass("transform-origin-left-top");
+				}else if((menuPosi.direction & DIRECT_BOTTOM) == DIRECT_BOTTOM){
+					panel.addClass("transform-origin-left-bottom");
+				}else{
+					panel.addClass("transform-origin-left");
+				}
+			}else if((menuPosi.direction & DIRECT_RIGHT) == DIRECT_RIGHT){
+				//在右边
+				if((menuPosi.direction & DIRECT_TOP) == DIRECT_TOP){
+					panel.addClass("transform-origin-right-top");
+				}else if((menuPosi.direction & DIRECT_BOTTOM) == DIRECT_BOTTOM){
+					panel.addClass("transform-origin-right-bottom");
+				}else{
+					panel.addClass("transform-origin-right");
+				}
 			}
 			panel.addClass("menu_dialog_show");
 			mask.removeClass("hidden");
@@ -272,12 +322,24 @@
 			var moveY = currentY - startY;
 			var x = startMenuX + moveX;
 			var y = startMenuY + moveY;
-			if(x <= 0 || (x+menuWidth) >= WINWIDTH){
-				return;
+			if(x <= 0){
+				x = 0;
 			}
-			if(y <= 0 || (y+menuWidth) >= WINHEIGHT){
-				return;
+			if(x+menuWidth >= WINWIDTH){
+				x = WINWIDTH - menuWidth;
 			}
+			/* if(x <= 0 || (x+menuWidth) >= WINWIDTH){
+				return;
+			} */
+			if(y <= 0){
+				y = 0;
+			}
+			if(y+menuWidth >= WINHEIGHT){
+				y = WINHEIGHT - menuWidth
+			}
+			/* if(y <= 0 || (y+menuWidth) >= WINHEIGHT){
+				return;
+			} */
 			menu.css({
 				top: y+"px",
 				left: x+"px"
@@ -298,7 +360,7 @@
 			}
 			var menuPosi = getMenuPosi();
 			var x = 10;
-			if(menuPosi.direction == 1){
+			if((menuPosi.direction & DIRECT_RIGHT) == DIRECT_RIGHT){
 				menu.css({
 					left: "unset",
 					right: "10px"
@@ -319,7 +381,7 @@
 			e.stopPropagation(); //禁止冒泡
 			showPanel()
 		}) */
-		mask.on("click",function(e){
+		mask.on("touchstart",function(e){
 			e.stopPropagation(); //禁止冒泡
 			hidePanel();
 		})
