@@ -343,9 +343,9 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 	 * @return
 	 */
 	static private Map<String, Access> loadFile(RandomAccessFile file) {
-		if (null == file)
-			return null;
 		Map<String, Access> map = new HashMap<String, Access>();
+		if (null == file)
+			return map;
 		try {
 			String line = file.readLine();// 先把第一行表头读掉
 			// 分析每一行
@@ -366,7 +366,14 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 					}
 
 				}
-				Access access = new Access(split[0], Integer.valueOf(split[1]), split[2]);
+				int count = 0;
+				String scount = split[1];
+				try {
+					count = Integer.valueOf(scount);
+				} catch (NumberFormatException e) {
+					logger.error("访问数解析失败，使用0代替,scount=" + scount, e);
+				}
+				Access access = new Access(split[0], count, split[2]);
 				String dstr = split[3];
 				try {
 					access.setDate(TimeUtil.parse(dstr));
@@ -377,7 +384,6 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 			}
 		} catch (Exception e) {
 			logger.error("无法将访问记录文件读入", e);
-			return null;
 		}
 		return map;
 	}

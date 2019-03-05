@@ -9,10 +9,19 @@
 <title>首页</title>
  <link href="${ pageContext.request.contextPath }/${serverId}/common/common.css" rel="stylesheet" type="text/css">
  <link href="${ pageContext.request.contextPath }/${serverId}/css/global.css" rel="stylesheet" type="text/css">
-<link href="${ pageContext.request.contextPath }/${serverId}/blog/css/index.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/${serverId}/blog/css/index.css?d=2019" rel="stylesheet" type="text/css">
 
 <style type="text/css">
 </style>
+
+<script type="text/javascript">
+window.addEventListener("error" , function(e){
+	console.log("监听到错误");
+	console.log(e);
+	alert(e.error +" \r\n  "+e.error.stack);
+})
+
+</script>
 </head>
 <body class="darkMode ">
 	<div class="main ">
@@ -121,6 +130,8 @@
 	    	}
 	    	});
 	});  */
+
+	
 	
 	function navigatorTo(ele){
 		var _this = $(ele);
@@ -202,6 +213,148 @@
 			height: panelWidth
 		})
 		adjustPanelPosi();
+		
+		/* 绘制图标部分 */
+		 var icons = [{
+			url:'./images/fresh.jpg',
+			text: "刷新",
+			css: {},
+			callback:function(){
+				alert("刷新");
+			}
+		},{
+			url:'./images/fresh.jpg',
+			text: "顶部",
+			css: {},
+			callback:function(){
+				alert("顶部");
+			}
+		},{
+			url:'./images/fresh.jpg',
+			text: "日志",
+			css: {},
+			callback:function(panel){
+				hidePanel();
+				location.href="http://www.ajie18.top/sso/login.do"
+			}
+		},{
+			url:'./images/fresh.jpg',
+			text: "夜间模式",
+			css: {},
+			callback:function(){
+				alert("夜间模式");
+			}
+		},{
+			url:'./images/fresh.jpg',
+			text: "后台",
+			css: {},
+			callback:function(){
+				alert("后台");
+			}
+		},{
+			url:'./images/fresh.jpg',
+			text: "小程序",
+			css: {},
+			callback:function(){
+				alert("小程序");
+			}
+		},
+		
+		]
+		var ICON_WIDTH = 60;//图标的宽高
+		var itemWidth = panelWidth / 3;
+		var itemHeight = panelWidth / 2;
+		//因为每个框里面的内容都不一样，所以用一个集合存起来，方便遍历时使用
+		var boxProperties = [{
+			//1
+			box:{
+				top: 0,
+				left: 0
+			},
+			img:{
+				"padding-top": (itemHeight/3)+"px",
+				right: 0,
+			},
+			textClass:"operating-text-left-top"
+			
+		},{
+			//2
+			box:{
+				top: 0,
+				left: itemWidth
+			},
+			img:{
+				left: (itemWidth-ICON_WIDTH)/2
+			},
+			textClass:"operating-text-center-top"
+			
+		},{
+			//3
+			box:{
+				top: 0,
+				left: itemWidth*2
+			},
+			img:{
+				"padding-top": (itemHeight/3)+"px",
+				left: 0
+			},
+			textClass:"operating-text-right-top"
+			
+		},{
+			//4
+			box:{
+				top: itemHeight,
+				left: 0
+			},
+			img:{
+				right: 0
+			},
+			textClass:"operating-text-left-bottom"
+			
+		},{
+			//5
+			box:{
+				top: itemHeight,
+				left: itemWidth
+			},
+			img:{
+				"padding-top": (itemHeight/3)+"px",
+				left: (itemWidth-ICON_WIDTH)/2
+			},
+			textClass:"operating-text-center-bottom"
+			
+		},{
+			//6
+			box:{
+				top: itemHeight,
+				left: itemWidth*2
+			},
+			img:{
+				left: 0
+			},
+			textClass:"operating-text-right-bottom"
+			
+		}
+		
+		]
+		//不管穿多少个 ，都是6个
+		for(let i=0;i<6;i++){
+			var prop = boxProperties[i];
+			
+			var item = $("<div>").addClass("operating-item operatingTap").css({
+				width: itemWidth,
+				height: itemHeight
+			}).css(prop.box).appendTo(panel);
+			var icon = icons[i];
+			if(!icon){
+				continue;
+			}
+			//item[0]["bindCallback"] = icon.callback;
+			$("<img>").addClass("operating-icon operatingTapItem").attr("src",icon.url).attr("data-idx",i).appendTo(item).css(prop.img);
+			$("<div>").addClass("operating-text").addClass(prop.textClass).html(icon.text).appendTo(item);
+			
+		}
+		 
 		function getPanelWidth(){
 			return panelWidth;
 		}
@@ -222,6 +375,27 @@
 				left: x,
 				top: y
 			})
+		}
+		/**定时对menu的背景透明度进行过修改*/
+		menuBgTimeout();
+		var timing;
+		function menuBgTimeout(){
+			timing = setTimeout(function(){
+				menu.addClass("menu-bg-transparent")
+				clearTimeout(timing);
+			}, 5000)
+		}
+		
+		function clearBgTimeout(){
+			menu.removeClass("menu-bg-transparent")
+			if(timing){
+				clearTimeout(timing);
+			}
+		}
+		
+		function freshBgTimeout(){
+			clearBgTimeout();
+			menuBgTimeout();
 		}
 		
 		function getMenuPosi(){
@@ -289,14 +463,15 @@
 			menu.addClass("hidden");
 		}
 		
-		function hidePanel(){
+		function hidePanel() {
 			panel.removeClass("menu_dialog_show");
 			panel.addClass("menu_dialog_hide");
-			menu.removeClass("hidden");
 			var timing;
 			timing = setTimeout(function(){
+				menu.removeClass("hidden");
 				mask.addClass("hidden");
 				panel.removeClass("menu_dialog_hide");
+				freshBgTimeout();
 				clearTimeout(timing);
 			},200)
 		}
@@ -305,6 +480,7 @@
 		menu.get(0).addEventListener("touchstart",function(event){
 			var event = event || window.event;
 			event.preventDefault();//禁止页面顺着滚动
+			clearBgTimeout();
 			startTime = event.timeStamp;
 			startX = event.changedTouches[0].clientX;
 			startY = event.changedTouches[0].clientY;
@@ -344,6 +520,7 @@
 				top: y+"px",
 				left: x+"px"
 			})
+			freshBgTimeout();
 		},false)
 		menu.get(0).addEventListener("touchend",function(event){
 			var event = event || window.event;
@@ -381,14 +558,17 @@
 			e.stopPropagation(); //禁止冒泡
 			showPanel()
 		}) */
-		mask.on("touchstart",function(e){
+		mask.on("click",function(e){
 			e.stopPropagation(); //禁止冒泡
 			hidePanel();
 		})
 		
-		panel.on("click",function(e){
-			var e = e || window.event;
+		 panel.on("click",".operatingTapItem",function(e){
+			 var e = e || window.event;
 			e.stopPropagation(); //禁止冒泡
+			var idx = $(this).attr("data-idx");
+			var fn = icons[idx].callback;
+			typeof fn === "function" && fn();
 		})
 	})()
 	
