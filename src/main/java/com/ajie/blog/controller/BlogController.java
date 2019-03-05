@@ -84,6 +84,20 @@ public class BlogController {
 			request.setAttribute("userheader", user.getHeader());
 			request.setAttribute("userid", user.getId());
 		}
+		// 获取微信配置
+		WeixinResource wx = resource.getWeixinResource();
+		JsConfig config = null;
+		if (null != wx) {
+			config = wx.getJsConfiig();
+			if (null != config) {
+				String url = getRequestUrl(request);
+				config.sign(url);
+				request.setAttribute("config", JsonUtils.toJSONString(config));
+			}
+		}
+		if (null == config) {
+			request.setAttribute("config", "");
+		}
 		return prefix + "index";
 	}
 

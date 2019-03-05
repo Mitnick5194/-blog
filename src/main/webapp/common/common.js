@@ -13,6 +13,10 @@
 	var BODY = $(document.body);
 	var DOC = $(document);
 	var WIN = $(window);
+	/**空对象*/
+	var EMPTY = {}; 
+	/**本地储存*/
+    var _storage = localStorage;
 	$.extend($.fn , {
 		getWindow: function(){
 			return new WindowPlugin(this);
@@ -318,4 +322,97 @@
 		}
 	});
 }
+
+	//扩展jquery
+	$.extend($,{
+		/**
+	     * Cookie操作
+	     */
+	    Cookie: {
+	        /**
+	         * 保存cookie
+	         * 例如：
+	         *        $.Cookie.set("key","value");//不指定过期时间
+	         *        $.Cookie.set("key","value",1000*60*60);//指定过期时间【毫秒】
+	         */
+	        set: function (key, value, expiresMillis, path) {
+	            var ck = key + "=" + escape(value);
+	            // 判断是否设置过期时间
+	            var date = new Date();
+	            if (expiresMillis) {
+	                date.setTime(date.getTime() + expiresMillis);
+	            } else {
+	                date.setFullYear(date.getFullYear() + 1);
+	            }
+	            ck = ck + ";expires=" + date.toGMTString() + ";path=" + (path || "");
+	            DOC[0].cookie = ck;
+	        },
+	        /**
+	         * 获取保存的cookie
+	         * 例如：$.Cookie.get("key");
+	         */
+	        get: function (key) {
+	            var array = DOC[0].cookie.split(";");
+	            for (var i = 0; i < array.length; i++) {
+	                var arr = array[i].split("=");
+	                if (arr[0].trim() == key) {
+	                    return unescape(arr[1]);
+	                }
+	            }
+	            return EMPTY;
+	        },
+	        /**
+	         * 移除cookie
+	         * 例如：$.Cookie.remove("key","path=/");
+	         * key:键
+	         * path:路径【可选】
+	         */
+	        remove: function (key, path) {
+	            var date = new Date();
+	            date.setDate(date.getDate() - 1);
+	            DOC[0].cookie = key + "=;expires=" + date.toGMTString() + ";path=" + (path || "");
+	        },
+	        /**
+	         * 删除所有的cookie
+	         * 例如Query.Cookie.clear();
+	         * path:路径【可选】
+	         */
+	        clear: function (path) {
+	            var date = new Date();
+	            date.setDate(date.getDate() - 1);
+	            var ex = date.toGMTString();
+	            var keys = DOC[0].cookie.match(/[^ =;]+(?=\=)/g);
+	            $.each(keys, function (key) {
+	                var ck = key + "=;expires=" + ex;
+	                if (path) {
+	                    ck += ";path=" + (path || "");
+	                }
+	                DOC[0].cookie = ck;
+	            });
+	        }
+	    },
+	    /**
+	     * HTML5本地储存，用法同Cookie操作
+	     * 区别：
+	     *    Cookie只能储存最多4k的内容，Storage：2M
+	     * Cookie可以在后台获取到，Storage不能
+	     */
+	    Storage: {
+	        get: function (key) {
+	            var data = _storage.getItem($.Bencode(key));
+	            return data ? $.Bdecode(data) : EMPTY;
+	        },
+	        set: function (key, value) {
+	            _storage.setItem($.Bencode(key), $.Bencode(value));
+	        },
+	        remove: function (key) {
+	            _storage.removeItem($.Bencode(key));
+	        },
+	        clear: function () {
+	            _storage.clear();
+	        }
+	    },
+		
+	})
+
 })()

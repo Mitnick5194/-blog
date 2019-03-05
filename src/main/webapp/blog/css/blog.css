@@ -11,7 +11,7 @@ html, body {overflow: hidden;overflow-y: auto;background-color: #f5f6f7;}
 .addblog{padding: 0 10px 0 20px; vertical-align: top;background: url('/blog/images/edit.jpg') no-repeat left center;background-size: 20px;}
 /* 内容 */
 .container {margin-top: 55px;margin-bottom: 20px;}
-.content{line-height: 25px;}
+.content{line-height: 25px;font-size: 16px;}
 .center-main {padding: 20px;background: #fff;border-bottom:1px solid #eee;}
 .center-main>.title{font-size: 22px;font-weight: bold;}
 .center-main>section{padding: 5px 0;}

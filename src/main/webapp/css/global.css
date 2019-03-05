@@ -1,5 +1,5 @@
-* {margin: 0;padding: 0;-webkit-tap-highlight-color: transparent;-webkit-touch-callout: none;-webkit-font-smoothing: none;}
-body {font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;font-size: 14px;line-height: 1.42857143;color: #3D3D3D;}
+* {margin: 0;padding: 0;-webkit-tap-highlight-color: transparent;-webkit-touch-callout: none;}
+body {ont-family: "Helvetica Neue", Helvetica, Arial, sans-serif;font-size: 14px;line-height: 1.42857143;color: #3D3D3D;}
 a {text-decoration: none;}
 .floatR{float: right;}
 .flex{display: flex;}

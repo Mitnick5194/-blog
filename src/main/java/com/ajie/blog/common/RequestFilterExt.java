@@ -20,6 +20,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,6 +100,12 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
 		HttpServletRequest req = (HttpServletRequest) request;
+		HttpServletResponse res = (HttpServletResponse) response;
+		String uri = req.getRequestURI();
+		if (uri.indexOf("manager") > -1) {
+			res.sendError(HttpServletResponse.SC_FORBIDDEN);
+			return;
+		}
 		enterRecord(req);
 		super.doFilter(request, response, chain);
 	};

@@ -3,7 +3,6 @@ body,html{background: #fafafa;}
 div {-webkit-tab-highlight-color: rgba(0,0,0,0); } 
 /* 导航 */
 .header-navi{z-index: 1000; position: fixed;top:0;left:0;width: 100%;height: 45px;line-height: 45px;background: #fff;text-align: right;border-bottom: 1px solid #eee;}
-.header-navi.darkModeActive{border-bottom: 1px solid #000;}
 .header-navi>div{display: inline-block;}
 .header-navi>.user-header{display: inline-flex;align-items: center;height: 100%;margin-right: 15px;cursor: pointer;}
 .header-navi>.user-header div:nth-child(2){margin-left: 10px;color: #337ab7}
@@ -28,7 +27,6 @@ div {-webkit-tab-highlight-color: rgba(0,0,0,0); }
 /* 博客内容 */
 .container{margin-top: 55px;margin-bottom: 20px;}
 .blogs>section{border-bottom: 1px solid #eee;padding: 20px 15px;background: #fff;}
-.blogs>section.darkModeActive{border-bottom: 1px solid #000;}
 .blogs .title{font-size: 22px;font-weight: bold;padding-bottom: 10px;cursor: pointer;}
 .abstract-content{padding-bottom: 10px;}
 .extract-list{display: flex;}
