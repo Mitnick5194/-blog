@@ -65,7 +65,7 @@ public interface LabelService {
 	 * @param labelName
 	 * @return
 	 */
-	List<TbBlog> getLabelBlogs(String labelName) throws BlogException;
+	List<TbBlog> getLabelBlogs(String labelName);
 
 	/**
 	 * 删除标签 TODO 暂不支持

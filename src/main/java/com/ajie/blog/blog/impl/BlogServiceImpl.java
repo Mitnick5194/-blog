@@ -384,7 +384,7 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 	}
 
 	@Override
-	public List<TbBlog> getBlogByIds(List<Integer> ids) throws BlogException {
+	public List<TbBlog> getBlogByIds(List<Integer> ids){
 		if (null == ids || ids.isEmpty())
 			return emptyList();
 		TbBlogExample ex = new TbBlogExample();

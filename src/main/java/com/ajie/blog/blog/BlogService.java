@@ -77,7 +77,7 @@ public interface BlogService {
 	 * @return
 	 * @throws BlogException
 	 */
-	List<TbBlog> getBlogByIds(List<Integer> ids) throws BlogException;
+	List<TbBlog> getBlogByIds(List<Integer> ids);
 
 	/**
 	 * 用户所有博客
@@ -173,7 +173,7 @@ public interface BlogService {
 	 * 
 	 * @param blog
 	 * @param operator
-	 *            操作者，用于检验要删除的博客是不是自己的或者是不是管理员删除 
+	 *            操作者，用于检验要删除的博客是不是自己的或者是不是管理员删除
 	 * @throws BlogException
 	 */
 	void deleteBlog(TbBlog blog, TbUser operator) throws BlogException;

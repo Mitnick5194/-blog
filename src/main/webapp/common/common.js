@@ -217,12 +217,18 @@
  */
  function WindowPlugin(ele) {
  	var content = $(ele);
+ 	var contentWidth = content.width();
+ 	var contentHeight = content.height();
  	var win = $(window);
  	var plugin = this;
  	var mask = $("<div/>").addClass("window-plugin-background").appendTo(BODY);
  	var dialog = $("<div/>").addClass("window-plugin-dialog").appendTo(BODY);
  	var closer = $("<span/>").addClass("window-plugin-closer").appendTo(dialog).attr("title", "关闭");
- 	content.appendTo(dialog);
+ 	
+ 	content.appendTo(dialog).css({
+ 		width: contentWidth,
+ 		contentHeight:contentHeight
+ 	});
 	var clickbackhide = false; //点击背景关闭 默认不关闭
 	var callbackafterclose; //关闭后回调
 	this.setCallbackafterclose = function (callbackafterclose) {
@@ -412,7 +418,16 @@
 	            _storage.clear();
 	        }
 	    },
-		
+	  //判断是否支持无前缀型css3
+		supportcss3:function(){
+			var bool = false;
+			if(null ===CSS3_SUPPORTED){
+				var support = $("<i/>");
+				bool = support[0].style.animation==="";
+				support.remove();
+			}
+			return bool;
+		},
 	})
 
 })()

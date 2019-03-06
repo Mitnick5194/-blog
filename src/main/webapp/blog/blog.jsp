@@ -142,6 +142,7 @@
 		if(configstr && configstr.length){
 			config = JSON.parse(configstr);
 		}
+		config.debug = true;
 		wx.config(config);
 		
 	</script>

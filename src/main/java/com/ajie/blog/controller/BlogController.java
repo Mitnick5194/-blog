@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -183,7 +184,19 @@ public class BlogController {
 	@ResponseBody
 	@RequestMapping("/loadblogs")
 	public ResponseResult loadblogs(HttpServletRequest request, HttpServletResponse response) {
-		List<TbBlog> blogs = blogService.getBlogs(null, 0, null);
+		String tag = request.getParameter("tag");
+		List<TbBlog> blogs = null;
+		if (null == tag) {
+			blogs = blogService.getBlogs(null, 0, null);
+		} else {
+			List<TbBlog> tagBlogs = labelService.getLabelBlogs(tag);
+			List<Integer> blogIds = new ArrayList<Integer>(tagBlogs.size());
+			for (TbBlog blog : tagBlogs) {
+				blogIds.add(blog.getId());
+			}
+			blogs = blogService.getBlogByIds(blogIds);
+		}
+
 		List<BlogVo> trans = new TransList<BlogVo, TbBlog>(blogs) {
 			@Override
 			public BlogVo trans(TbBlog v) {

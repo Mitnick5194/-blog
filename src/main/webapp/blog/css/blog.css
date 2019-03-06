@@ -61,7 +61,7 @@ html, body {overflow: hidden;overflow-y: auto;background-color: #f5f6f7;}
 .vertify-dv>input{width: 40%; border: 1px solid #eee;border-radius: 3px;height: 100%;padding: 0 5px;}
 .vertify-dv>div{width: 60%;text-align: right;height: 100%;}
 .vertify-image>img{border : 1px solid #888;height: 40px;width: 80px}
-	
+
 /* 平板 */
 @media screen and (min-width: 768px){
 	.login-frame{width: 400px;height: 250px;}

@@ -13,10 +13,8 @@
 	$(document).ready(function(){
 		toggleDarkMode(!!isDarkMode());
 	})
-	var host = "http://"+location.host +"/blog/"+serverId+"/images/";
-	var url = host +"my_wxapp_code.jpg";
 	var dayIcon = {
-			url:'http://www.ajie18.top/images/fresh.jpg',
+			url:'http://www.ajie18.top/images/day3.jpg',
 			text: "白天模式",
 			css: {},
 			callback:function(panel){
@@ -40,7 +38,6 @@
 		url:'http://www.ajie18.top/images/fresh.jpg',
 		text: "刷新",
 		css: {},
-		tapHide: true,
 		callback:function(){
 			var panel = arguments[0];
 			location.reload();
@@ -57,7 +54,7 @@
 		text: "日志",
 		css: {},
 		callback:function(){
-			alert("日志");
+			 pageLog();
 		}
 	},icon
 	,{
@@ -72,15 +69,17 @@
 		text: "小程序",
 		css: {},
 		callback:function(panel){
+			var host = "http://"+location.host +"/blog/"+serverId+"/images/";
+			var url = host+"my_wxapp_code_shuiyin.jpg";
 			//全屏查看图片
 			wx.previewImage({
 				current: url, // 当前显示图片的http链接
-				urls: url // 需要预览的图片http链接列表
+				urls: [url] // 需要预览的图片http链接列表
 			});
 		}
 	},]
 	var options = {
-		tapHide: false,
+		tapHide: true,
 		icons: icons
 	}
 	$.createSuspendBtn(options);
@@ -120,11 +119,13 @@
 	var tempstr = $("#iBlogTemp").html();
 	var cacheTags = null;
 	loadblogs();
-	function loadblogs(){
+	function loadblogs(tag){
 		var loading = $.showloading("加载中")
 		$.ajax({
 			type: 'post',
-			data:{},
+			data:{
+				tag: tag
+			},
 			url: 'loadblogs.do',
 			success: function(data){
 				if(data.code == 200){
@@ -176,12 +177,13 @@
 					var tags = data.data ||[];
 					var sb = [];
 					sb.push("<div class='title'>标签分类</div>")
+					sb.push("<div class='tag'>全部</div>")
 					for(let i=0;i<tags.length;i++){
 						var tag = tags[i];
-						sb.push("<div>"+tag.name+"（"+tag.blogCount+"）</div>");
+						sb.push("<div class='tag' data-name="+tag.name+">"+tag.name+"（"+tag.blogCount+"）</div>");
 						if(i == 9){
 							//显示10个
-							sb.push("<div class='moreTags'>更多标签</div>");
+							sb.push("<div class='tag moreTags'>更多标签</div>");
 							break;
 						}
 					}
@@ -198,22 +200,49 @@
 		})
 	}
 	
+	$(".user").on("click",function(){
+		var _this = $(this);
+		var type = _this.attr("data-type")
+		var uri = _this.attr("data-uri");
+		var host = location.host+"/";
+		var url = "";
+		if(host.indexOf("localhost") > -1 ||host.indexOf("127.0") > -1 || host.indexOf("10.8") > -1){
+			url = 'http://localhost:8081/'+uri;
+		}else{
+			url = "http://"+host+uri;
+		}
+		if("login" == type){
+			url += "?ref="+location.href
+		}else if("userinfo" == type){
+			url += "?id="+_this.attr("data-id");
+		}
+		
+		location.href = url;
+	})
+	
 	$("#iBlogs").on("click" , "section" , function(e){
 		e.stopPropagation(); //禁止冒泡
 		var id = $(this).attr("data-id");
+		/*var form = $("#iForm");
+		form.find("input").val(id);
+		form.submit();*/
 		location.href = "blog.do?id="+id;
 		//window.open("blog.do?id="+id);
 	})
 	
-	$("#iListTags").on("click","div",function(e){
+	var tags = $("#iTags");
+	$("#iListTags").on("click",".tag",function(e){
 		e.stopPropagation(); //禁止冒泡
 		var _this = $(this);
+		tags.removeClass("active");
 		if(_this.hasClass("moreTags")){
 			window.open("moretags.do");
+			return ;
 		}
+		var tag = _this.attr("data-name");
+		loadblogs(tag);
 	})
 	
-	var tags = $("#iTags");
 	//点击标签 只有移动设备才有标签按钮，所以可以直接监听touchstart,方便做收起操作
 	$("#iSlider").on("touchstart",function(e){
 			var e = e || window.event;

@@ -115,7 +115,7 @@ public class LabelServiceImpl implements LabelService {
 	}
 
 	@Override
-	public List<TbBlog> getLabelBlogs(String labelName) throws BlogException {
+	public List<TbBlog> getLabelBlogs(String labelName) {
 		if (null == labelName)
 			return Collections.emptyList();
 		TbLabel label = getLabel(labelName);
