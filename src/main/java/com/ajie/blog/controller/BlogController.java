@@ -185,8 +185,9 @@ public class BlogController {
 	@RequestMapping("/loadblogs")
 	public ResponseResult loadblogs(HttpServletRequest request, HttpServletResponse response) {
 		String tag = request.getParameter("tag");
+		//小程序请求tag没带过来时，拿到的竟然是带引号的"null"，坑啊
 		List<TbBlog> blogs = null;
-		if (null == tag) {
+		if (null == tag || "null".equals(tag)) {
 			blogs = blogService.getBlogs(null, 0, null);
 		} else {
 			List<TbBlog> tagBlogs = labelService.getLabelBlogs(tag);
