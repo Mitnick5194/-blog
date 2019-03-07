@@ -10,13 +10,27 @@
 <link href="${ pageContext.request.contextPath }/${serverId }/css/global.css" rel="stylesheet" type="text/css">
 <link href="${ pageContext.request.contextPath }/${serverId }/common/common.css" rel="stylesheet" type="text/css">
 <link href="${ pageContext.request.contextPath }/${serverId }/blog/css/blog.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/${serverId}/css/dark-mode-support.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/${serverId}/plugin/suspend-btn.css" rel="stylesheet" type="text/css">
 
 <style type="text/css">
 </style>
+<script type="text/javascript">
+var errMsg , errCount = 0;
+window.addEventListener("error" , function(e){
+	/* console.log("监听到错误");
+	console.log(e);
+	alert(e.error +" \r\n  "+e.error.stack); */
+	errMsg = e.error+"<br>"+e.error.stack;
+	++errCount;
+	pageLog();
+})
+
+</script>
 </head>
-<body>
+<body class="darkMode">
 	<div class="main">
-		<div class="header-navi">
+		<div class="header-navi darkMode">
 			<div onclick="javascript:location.href='addblog.do'" class="addblog">写博客</div>
 				<div class="user-header" id="iUserHeader">
 					<img class="${empty userid ? 'hidden':'' } user-info" onclick="navigatorTo(this)" data-id="${userid }" data-type="userinfo" data-uri="sso/userinfo.do" src="${userheader }" />
@@ -25,7 +39,7 @@
 			</div>
 			<div class="container">
 				<div class="container-content">
-					<div class="center-main" id="iBlogs">
+					<div class="center-main darkMode" id="iBlogs">
 						<section class="title"></section>
 						<section class="user-list">
 							<span></span>
@@ -50,7 +64,7 @@
 						</div>
 					</div>
 				</div>
-				<div class="comment">
+				<div class="comment darkMode">
 					<input type="hidden" id="iUser" value="${userid }" />
 					<c:choose>
 						<c:when test="${not empty userheader }">
@@ -62,13 +76,13 @@
 					</c:choose>
 					
 					<div class="text-dv"> 
-						<textarea id="iComment" class="comment-text" placeholder="想对作者说点什么"></textarea>
+						<textarea id="iComment" class="comment-text darkMode" placeholder="想对作者说点什么"></textarea>
 					</div>
 					<div class="submit-btn" id="iSubmit">发表</div>
 				</div>
-				<div class="comment-list" id="iComments">
+				<div class="comment-list darkMode" id="iComments">
 				</div>
-				<div class="footer-code">
+				<div class="footer-code darkMode">
 						<span class="hits">关注公众号和小程序，获取最新动态</span>
 						<div class="footer-qr-code">
 							<div class="wxgz-qrcode">
@@ -101,12 +115,41 @@
 			</div>
 		</div>
 	</div>
-	
+	<div class="log-frame" id="iLogFrame">
+		<div class="log-nav"><div>页面日志</div><div>info：0 warn：0 <span class="logErr error-font">error: 0</span></div></div>
+		<div class="system-info">系统：</div>
+		<div class="page-log">页面错误日志</div>
+	</div>
 	<jsp:include page="/footer.jsp"></jsp:include>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/js/jquery-1.9.1.js"></script>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/common/common.js"></script>
 	<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
 	<script>
+	//日志弹窗
+	var  logFrame = $("#iLogFrame").getWindow();
+	logFrame.setCloser(false);
+	logFrame.clickbackhide();
+	//页面错误日志
+	function pageLog(){
+		var userAgent = navigator.userAgent;
+		var frame =  $("#iLogFrame")
+		var supportCss3 = $.supportcss3;
+		if(supportCss3){
+			frame.find(".system-info").html("系统："+userAgent+" <span style='color: green'>正常</span>");
+		}else{
+			frame.find(".system-info").html("系统："+userAgent+" <span style='color: red'>异常</span>");
+		}
+		
+		var pageLog ="页面信息：";
+		if(!errMsg){
+			pageLog += "<span style='color: green'>正常</span>"
+		} else {
+			frame.find(".logErr").html("error："+errCount);
+			pageLog += "<span style='color:red'>"+errMsg+"</span>"
+		}
+		frame.find(".page-log").html(pageLog);
+		logFrame.show();
+	}
 		var serverId = '${serverId}';
 		var loginFrame = $("#iLoginFrame").getWindow();
 		loginFrame.setCloser(false);
@@ -137,15 +180,17 @@
 			location.href = url;
 		}
 		
-		var config = {};
+		/* var config = {};
 		var configstr = '${config}';
 		if(configstr && configstr.length){
 			config = JSON.parse(configstr);
 		}
 		config.debug = true;
 		wx.config(config);
-		
+		 */
 	</script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/plugin/suspend-btn.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/js/dark-mode-support.js"></script>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/blog/js/blog.js"></script>
 	<script type="text/temp" id="iCommentTemp">
 		<section class="comment-item">

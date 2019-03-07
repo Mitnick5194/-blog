@@ -11,14 +11,15 @@
 	};
 	
 	$(document).ready(function(){
-		toggleDarkMode(!!isDarkMode());
+		$.toggleDarkMode($.isDarkMode());
 	})
 	var dayIcon = {
 			url:'http://www.ajie18.top/images/day3.jpg',
-			text: "白天模式",
+			text: "日间模式",
 			css: {},
-			callback:function(panel){
-				toggleDarkMode(false);
+			callback:function(panel) {
+				$.toggleDarkMode(false);
+				//toggleDarkMode(false);
 				panel.setIcon(darkIcon , 3);
 				panel.hidePanel();
 			}
@@ -27,18 +28,20 @@
 			url:'http://www.ajie18.top/images/dark.jpg',
 			text: "夜间模式",
 			css: {},
-			callback:function(panel){
-				toggleDarkMode(true);
+			callback:function(panel) {
+				$.toggleDarkMode(true);
+				//toggleDarkMode(true);
 				panel.setIcon(dayIcon , 3);
+				panel.hidePanel();
 			}
 		}
-	var icon = isDarkMode() ? dayIcon  : darkIcon;
+	var icon = $.isDarkMode() ? dayIcon  : darkIcon;
 	//悬浮菜单
 	var icons = [{
 		url:'http://www.ajie18.top/images/fresh.jpg',
 		text: "刷新",
 		css: {},
-		callback:function(){
+		callback:function() {
 			var panel = arguments[0];
 			location.reload();
 		}
@@ -53,7 +56,7 @@
 		url:'http://www.ajie18.top/images/logging.jpg',
 		text: "日志",
 		css: {},
-		callback:function(){
+		callback:function() {
 			 pageLog();
 		}
 	},icon
@@ -84,42 +87,10 @@
 	}
 	$.createSuspendBtn(options);
 	
-	//true切换夜间，false切换白天
-	function toggleDarkMode(bool){
-		var toggle = typeof bool === 'boolean' ? bool : false;
-		//随便找一个节点看看是不是夜间模式
-		var isDark = $("#iSlider").hasClass("darkModeActive");
-		if(isDark == toggle){
-			return;
-		}
-		toggle ? $(".darkMode").addClass("darkModeActive") :$(".darkMode").removeClass("darkModeActive");
-		//保存设置
-		if(toggle){
-			//开启
-			$.Cookie.set(NIGHT_COOKIE_KEY,NIGHT_COOKIE_VAL);
-		}else{ //关闭
-			//删除cookie
-			$.Cookie.remove(NIGHT_COOKIE_KEY);
-		}
-	}
-	
-	/**
-	 * 检查是否为夜间模式
-	 * 
-	 * @returns {Boolean}
-	 */
-	function isDarkMode(){
-		var nightMode = $.Cookie.get(NIGHT_COOKIE_KEY);
-		if($.isEmptyObject(nightMode)){
-			return false;
-		}
-		return !!nightMode;
-	}
-	
 	var tempstr = $("#iBlogTemp").html();
 	var cacheTags = null;
 	loadblogs();
-	function loadblogs(tag){
+	function loadblogs(tag) {
 		var loading = $.showloading("加载中")
 		$.ajax({
 			type: 'post',
@@ -127,7 +98,7 @@
 				tag: tag
 			},
 			url: 'loadblogs.do',
-			success: function(data){
+			success: function(data) {
 				if(data.code == 200){
 					var blogs = data.data ||[];
 					var sb = [];
@@ -151,20 +122,20 @@
 				loading.hide();
 				loadtags();
 			},
-			fail: function(e){
+			fail: function(e) {
 				$.showToast(e)
 			},
 			complete: function(){
 				//在文档加载时已经判断了是不是夜间模式，但是异步加载的节点比较慢，所以需要手动再判断一下是不是夜间
-				if(isDarkMode()){
-					$("#iBlogs").find(".darkMode").addClass("darkModeActive");
+				if($.isDarkMode()){
+					$.toggleDarkMode($.isDarkMode())
 				}
 			}
 			
 		})
 	}
 	
-	function loadtags(){
+	function loadtags() {
 		if(cacheTags){
 			return;
 		}
@@ -240,6 +211,7 @@
 			return ;
 		}
 		var tag = _this.attr("data-name");
+		_this.addClass("active");
 		loadblogs(tag);
 	})
 	

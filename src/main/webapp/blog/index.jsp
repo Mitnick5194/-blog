@@ -7,9 +7,10 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width , initial-scale=1,maximum-scale=1.0, user-scalable=0">
 <title>首页</title>
- <link href="${ pageContext.request.contextPath }/${serverId}/common/common.css" rel="stylesheet" type="text/css">
- <link href="${ pageContext.request.contextPath }/${serverId}/css/global.css" rel="stylesheet" type="text/css">
-<link href="${ pageContext.request.contextPath }/${serverId}/blog/css/index.css?d=20190306" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/${serverId}/common/common.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/${serverId}/css/global.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/${serverId}/css/dark-mode-support.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/${serverId}/blog/css/index.css" rel="stylesheet" type="text/css">
 <link href="${ pageContext.request.contextPath }/${serverId}/plugin/suspend-btn.css" rel="stylesheet" type="text/css">
 
 <style type="text/css">
@@ -131,7 +132,7 @@ window.addEventListener("error" , function(e){
 			var pageLog ="页面信息：";
 			if(!errMsg){
 				pageLog += "<span style='color: green'>正常</span>"
-			}else{
+			} else {
 				frame.find(".logErr").html("error："+errCount);
 				pageLog += "<span style='color:red'>"+errMsg+"</span>"
 			}
@@ -140,7 +141,8 @@ window.addEventListener("error" , function(e){
 		}
 	</script>
 	<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/blog/js/index.js?d=2042"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/js/dark-mode-support.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/blog/js/index.js"></script>
 	<script type="text/javascript">
 	/*var config = {};
 	var configstr = '${config}';
@@ -159,9 +161,7 @@ window.addEventListener("error" , function(e){
 	
 	//var config = ${config};
 	/* config.debug = true;
-	wx.config(config); */
-	
-	
+	wx.config(config); */	
 	
 </script>
 	

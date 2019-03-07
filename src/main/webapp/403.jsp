@@ -24,6 +24,17 @@
 </head>
 <body>
 	<div class="notify">抱歉，权限不足，如需继续访问，<br>请联系管理员！</div>
-	<div class="qrcode-dv"><img src="${ pageContext.request.contextPath }/images/my_qr_code.jpg" width="200px"/></div>
+	<div class="qrcode-dv"><img id="iPic" src="${ pageContext.request.contextPath }/images/my_qr_code.jpg" width="200px"/></div>
+	<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
+	<script type="text/javascript">
+		var url = "http://www.ajie18.top/images/my_wxgz_qrcode.jpg"
+		iPic.addEventListener("click",function(){
+			wx.previewImage({
+				current: url, // 当前显示图片的http链接
+				urls: [url] // 需要预览的图片http链接列表
+			});
+		},false)
+	
+	</script>
 </body>
 </html>
