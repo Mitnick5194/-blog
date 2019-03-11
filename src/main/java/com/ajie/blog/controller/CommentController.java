@@ -19,6 +19,7 @@ import com.ajie.blog.controller.vo.CommentVo;
 import com.ajie.blog.label.LabelService;
 import com.ajie.chilli.collection.utils.TransList;
 import com.ajie.chilli.common.ResponseResult;
+import com.ajie.chilli.utils.HtmlFilter;
 import com.ajie.chilli.utils.Toolkits;
 import com.ajie.dao.pojo.TbComment;
 import com.ajie.dao.pojo.TbUser;
@@ -73,7 +74,8 @@ public class CommentController {
 		}
 		int blogId = Toolkits.toInt(request.getParameter("blogId"), 0);
 		String content = request.getParameter("content");
-
+		// 对html标签进行转义，防xss注入
+		content = HtmlFilter.escape(content);
 		try {
 			commentService.createComment(content, blogId, user.getId());
 			return ResponseResult.newResult(ResponseResult.CODE_SUC, "发布成功");

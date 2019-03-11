@@ -9,7 +9,7 @@ div {-webkit-tab-highlight-color: rgba(0,0,0,0); }
 .header-navi>.user-header div:nth-child(2){margin-left: 10px;color: #337ab7}
 .header-navi>.user-header>img{width: 25px; height: 25px;border-radius: 50%;}
 .login-btn{color: blue}
-.addblog{padding: 0 10px 0 20px; vertical-align: top;background: url('/blog/images/edit.jpg') no-repeat left center;background-size: 20px;}
+.addblog{cursor: pointer;padding: 0 10px 0 20px; vertical-align: top;background: url('/blog/images/edit.jpg') no-repeat left center;background-size: 20px;}
 /* 标签按钮 */
 .tag-btn{width: 30px;height: 40px;position: fixed;top: 2px;left: 10px;z-index: 1001;}
 .tag-btn>span{position: absolute;height: 2px;width:30px;background: #bbb;left: 0}
@@ -25,6 +25,7 @@ div {-webkit-tab-highlight-color: rgba(0,0,0,0); }
 .list-group .active{color: #337ab7}
 .list-group div+div {border-top: 1px solid #eee;}
 .list-group div {display: inline-block;width: 100%;padding: 10px 0;text-align: center;}
+.tag{cursor: pointer}
 /* 博客内容 */
 .container{margin-top: 55px;margin-bottom: 20px;}
 .blogs>section{border-bottom: 1px solid #eee;padding: 20px 15px;background: #fff;}
@@ -38,12 +39,14 @@ div {-webkit-tab-highlight-color: rgba(0,0,0,0); }
 .list-right{text-align: right;}
 .list-right div:nth-child(1){width:100%;border-right: 1px solid #888;padding-right: 10px;}
 .list-right>div{text-align: right;}
-.log-frame{width: 85%;min-height: 200px;}
+.log-frame{width: 85%;min-height: 200px;word-wrap:break-word}
 .log-nav{padding: 10px;background: #337ab7;display: flex;white-space: nowrap;color: #fff;}
 .log-nav div:nth-child(1){width: 100%}
 .system-info{padding: 10px;border: 1px solid #eee;font-size:12px;}
 .page-log{padding: 10px;}
 .error-font{color: red;}
+.col-green{color:green}
+.col-red{color: red}
 /* 右侧二维码 */
 .qr-code{display: none;text-align: center;font-size: 16px;font-weight: 600;}/* 默认不显示，只有在大屏幕时才显示 */
 /* 平板 */
@@ -58,5 +61,7 @@ div {-webkit-tab-highlight-color: rgba(0,0,0,0); }
 @media screen and (min-width: 1100px){
 	.tags-block{width: 250px;}
 	.qr-code{width: 250px;display: block;margin-left:30px;}
+	/* 隐藏菜单 */
+	.operating {display: none !important;}
 }
 

@@ -22,11 +22,8 @@
 		<property name="redisClient" ref="redisClient" />
 		<property name="remoteCmd" ref="remoteCmd" />
 		<property name="resourceService" ref="resourceService" />
-		<property name="uriList">
-			<list>
-				<value>*addblog*</value>
-			</list>
-		</property>
+		<!-- <property name="uriList"> <list> <value>*addblog*</value> </list> 
+			</property> -->
 		<property name="ssoHost" value="${sso-host}" />
 		<property name="path" value="${access-record-path}" />
 	</bean>
@@ -58,7 +55,7 @@
 		<constructor-arg index="0" ref="connectConfig" />
 		<constructor-arg index="1" value="asyn-blog-image-upload" />
 	</bean>
-	
+
 	<!-- 同步ssh会话管理服务 -->
 	<bean id="blockSshSessionMgr" class="com.ajie.chilli.remote.impl.BlockSshSessionMgr">
 		<constructor-arg index="0" ref="connectConfig" />
@@ -88,5 +85,12 @@
 	<!-- 资源服务接口 -->
 	<bean id="resourceService" class="com.ajie.resource.impl.RemoteResourceServiceImpl">
 		<property name="resourceURL" value="${resource-host}" />
+	</bean>
+
+	<bean class="java.lang.String" id="stopCommand">
+		<constructor-arg index="0" value="${stop-command}" />
+	</bean>
+	<bean class="java.lang.String" id="admin">
+		<constructor-arg index="0" value="${admin-user-name}" />
 	</bean>
 </beans>

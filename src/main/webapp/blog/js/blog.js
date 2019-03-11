@@ -84,7 +84,6 @@
 	}
 	$.createSuspendBtn(options);
 	getblogbyid(id,function(data){
-		console.log(data)
 		main.find(".title").html(data.title);
 		var userList = "<span>"+data.createDate+" | </span><span class='user' data-id="+data.userId+">"+data.user+" | </span><span>阅读数 "+data.readNum+"</span>";
 		main.find(".user-list").html(userList);
@@ -119,7 +118,7 @@
 				}
 			},
 			fail: function(e){
-				console.log(e);
+				$.showToast(e)
 			},
 			complete: function(){
 				loading.hide();
@@ -142,10 +141,13 @@
 				}
 			},
 			fail: function(e){
-				console.log(e);
+				$.showToast(e);
 			},
 			complete: function(){
-				
+				//更新一下时间
+				if(!endTime){
+					endTime = new Date().getTime();
+				}
 			}
 		})
 	}
@@ -154,7 +156,6 @@
 		if(!data || !data.length){
 			return;
 		}
-		console.log(data);
 		var tempstr = $("#iCommentTemp").html();
 		var sb = [];
 		for(let i=0;i<data.length;i++){
@@ -166,9 +167,7 @@
 	}
 	
 	$("#iSubmit").on("click", function(){
-		comment(function(data){
-			console.log(data)
-		})
+		comment()
 	})
 	
 	function comment(callback){
@@ -251,10 +250,13 @@
 		
 		var host = location.host;
 		var url;
-		if(host.indexOf("ajie18")>-1){
-			url = "http://www.ajie18.top/sso/dologin.do";
-		}else{
+		if(host.indexOf("localhost") > -1 ||host.indexOf("127.0") > -1 || host.indexOf("10.8") > -1){
 			url = "http://localhost:8081/sso/dologin.do";
+		}else if(serverId == 'xff'){
+			url = "http://www.ajie18.top/ajie/sso/dologin.do";
+		}
+		else{
+			url = "http://www.ajie18.top/sso/dologin.do";
 		}
 		$.ajax({
 		    url: url,
@@ -270,7 +272,6 @@
 		    		$.showToast(data.msg);
 		    		return;
 		    	}
-		    	console.log(data.data);
 		    	$.showToast("登录成功",function(){
 		    		//清空内容
 		    		$("#iLoginForm").find("input").val("");
@@ -290,6 +291,35 @@
 		user.removeClass("hidden");
 		user.attr("data-id",data.id).attr("src",data.header);
 		
+	}
+	
+	$(".user").on("click",function(e){
+		e = e || window.event;
+		e.stopPropagation(); //禁止冒泡
+		var _this = $(this);
+		gotoUserPage(_this);
+	})
+	
+	function gotoUserPage(ele){
+		var _this = $(ele);
+		var type = _this.attr("data-type")
+		var host = location.host+"/";
+		var url = "";
+		if(host.indexOf("localhost") > -1 ||host.indexOf("127.0") > -1 || host.indexOf("10.8") > -1){
+			url = 'http://localhost:8081/sso/';
+		}else if(serverId == 'xff'){
+			url = "http://"+host+"ajie/sso/";
+		}else{
+			url = "http://"+host+"/sso/";
+		}
+		if("login" == type){
+			url += "login.do?ref="+location.href;
+		}else if("userinfo" == type){
+			url += "userinfo?id="+_this.attr("data-id");
+			url += "?id="+_this.attr("data-id");
+		}
+		
+		location.href = url;
 	}
 	
 	

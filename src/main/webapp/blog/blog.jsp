@@ -16,7 +16,7 @@
 <style type="text/css">
 </style>
 <script type="text/javascript">
-var errMsg , errCount = 0;
+var errMsg , errCount = 0,startTime = new Date().getTime(),endTime;
 window.addEventListener("error" , function(e){
 	/* console.log("监听到错误");
 	console.log(e);
@@ -32,10 +32,16 @@ window.addEventListener("error" , function(e){
 	<div class="main">
 		<div class="header-navi darkMode">
 			<div onclick="javascript:location.href='addblog.do'" class="addblog">写博客</div>
-				<div class="user-header" id="iUserHeader">
-					<img class="${empty userid ? 'hidden':'' } user-info" onclick="navigatorTo(this)" data-id="${userid }" data-type="userinfo" data-uri="sso/userinfo.do" src="${userheader }" />
-					<div  class="${empty userid ? '':'hidden' } login-btn"  onclick="navigatorTo(this)" data-type="login" data-uri="sso/login.do">登录/注册</div>
-				</div>
+				<div class="user-header">
+				<c:choose>
+					<c:when test="${not empty userid }">
+						<img  class="user" data-id="${userid }" data-type="userinfo"  src="${userheader }" />
+					</c:when>
+					<c:otherwise>
+						<div class="login-btn user" data-type="login" data-uri="sso/login.do">登录/注册</div>
+					</c:otherwise>
+				</c:choose>
+			</div>
 			</div>
 			<div class="container">
 				<div class="container-content">
@@ -47,10 +53,7 @@ window.addEventListener("error" , function(e){
 							<span></span>
 						</section>
 						<section class="tags">
-							<!-- <span>标签：</span>
-							<span>linux</span>
-							<span>linux</span>
-							<span>linux</span> -->
+							<!-- <span>标签：</span> -->
 						</section>
 						<section class="content"></section>
 					</div>
@@ -134,20 +137,63 @@ window.addEventListener("error" , function(e){
 		var userAgent = navigator.userAgent;
 		var frame =  $("#iLogFrame")
 		var supportCss3 = $.supportcss3;
+		var msg = "";
+		var sb = [];
+		sb.push("<div>系统：");
+		sb.push(userAgent);
 		if(supportCss3){
-			frame.find(".system-info").html("系统："+userAgent+" <span style='color: green'>正常</span>");
+			sb.push(" <span style='color: green'>正常</span>");
 		}else{
-			frame.find(".system-info").html("系统："+userAgent+" <span style='color: red'>异常</span>");
+			sb.push(" <span class='col-green'>异常</span>");
+			frame.find(".system-info").html("系统："+userAgent+" <span class='col-red'>异常</span>");
 		}
-		
-		var pageLog ="页面信息：";
-		if(!errMsg){
-			pageLog += "<span style='color: green'>正常</span>"
+		sb.push("</div>")
+		sb.push("<div>");
+		sb.push("是否支持微信js api调用：");
+		if($.isBrowser("weixin")){
+			sb.push("<span class='col-green'>是</span>")
+		}else{
+			sb.push("<span class='col-red'>否</span>")
+		}
+		sb.push("</div>");
+		frame.find(".system-info").html(sb.join(""));
+		sb = [];
+		sb.push("<div>");
+		sb.push("页面信息：");
+		//var pageLog ="页面信息：";
+		if(!errMsg) {
+			sb.push("<span style='color: green'>正常</span>");
 		} else {
-			frame.find(".logErr").html("error："+errCount);
-			pageLog += "<span style='color:red'>"+errMsg+"</span>"
+			frame.find(".logErr").html("error："+ errCount);
+			sb.push("<span style='color:red'>");
+			sb.push(errMsg);
+			sb.push("</span><br>");
 		}
-		frame.find(".page-log").html(pageLog);
+		sb.push("</div>");
+		sb.push("<div>");
+		sb.push("页面加载时间：");
+		if(!endTime){
+			endTime = startTime + 2000;
+		}
+		var interval = (endTime - startTime) / 1000;
+		sb.push("<span class='interval'>");
+		sb.push(interval);
+		sb.push("</span>");
+		sb.push("s");
+		sb.push("</div>")
+		sb.push("<div>")
+		sb.push("加载速度：");
+		if(interval < 2) {
+			sb.push("<span class='col-green'>快</span>")
+		} else if (interval <3) {
+			sb.push("<span class='col-green'>较快</span>")
+		} else if (interval <= 5) {
+			sb.push("<span class='col-red'>慢</span>")
+		} else if (interval > 5) {
+			sb.push("<span class='col-red'>高延迟</span>")
+		}
+		sb.push("</div>");
+		frame.find(".page-log").html(sb.join(""));
 		logFrame.show();
 	}
 		var serverId = '${serverId}';
@@ -160,26 +206,6 @@ window.addEventListener("error" , function(e){
 			containner.toggleClass("active");
 		})
 		var id = '${id}';
-		function navigatorTo(ele){
-			var _this = $(ele);
-			var type = _this.attr("data-type")
-			var uri = _this.attr("data-uri");
-			var host = location.host+"/";
-			var url = "";
-			if(host.indexOf("localhost") > -1 ||host.indexOf("127.0") > -1 || host.indexOf("10.8") > -1){
-				url = 'http://localhost:8081/'+uri;
-			}else{
-				url = "http://"+host+uri;
-			}
-			if("login" == type){
-				url += "?ref="+location.href
-			}else if("userinfo" == type){
-				url += "?id="+_this.attr("data-id");
-			}
-			
-			location.href = url;
-		}
-		
 		/* var config = {};
 		var configstr = '${config}';
 		if(configstr && configstr.length){

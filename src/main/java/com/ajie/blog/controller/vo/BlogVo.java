@@ -1,6 +1,7 @@
 package com.ajie.blog.controller.vo;
 
 import com.ajie.blog.controller.utils.BlogUtil;
+import com.ajie.chilli.utils.HtmlFilter;
 import com.ajie.chilli.utils.common.StringUtils;
 import com.ajie.dao.pojo.TbBlog;
 
@@ -12,9 +13,13 @@ import com.ajie.dao.pojo.TbBlog;
  */
 public class BlogVo {
 
+	/** < ascii码 */
+	public final static byte MARK_LEFT = 0x3C;
+	/** > ascii码 */
+	public final static byte MARK_RIGHT = 0x3E;
 	private int id;
 	private String content;
-	/** 首页摘要*/
+	/** 首页摘要 */
 	private String abstractContent;
 	private String title;
 	private String userName;
@@ -39,48 +44,32 @@ public class BlogVo {
 		this.commentNum = blog.getCommentnum();
 		this.userId = blog.getUserid();
 		this.userHeader = blog.getUserheader();
-		if(StringUtils.isEmpty(blog.getUsernickname())){
+		if (StringUtils.isEmpty(blog.getUsernickname())) {
 			this.userName = blog.getUsername();
-		}else{
+		} else {
 			this.userName = blog.getUsernickname();
 		}
 		this.labels = blog.getLabelstrs();
 	}
 
 	/**
-	 * 摘要部分去除图片的显示
+	 * 摘要部分去除html标签（因为截取一段内容，可能前面有标签，但是结束标签没有被包含，会导致页面标签混乱）<br>
+	 * 摘要保留150字
+	 *
 	 * 
 	 * @param content
 	 */
 	private void handleAbstractContent(String content) {
-		if (content.length() > 150) {
-			// 摘要最多显示150个字
-			content = content.substring(0, 149);
+		// 先取400
+		if (content.length() > 400) {
+			content = content.substring(0, 399);
 		}
 		StringBuilder sb = new StringBuilder();
-		if (content.indexOf("<img") > -1 && content.indexOf("/>") > -1) {
-			char[] chars = content.toCharArray();
-			boolean append = true;
-			for (int i = 0; i < chars.length; i++) {
-				// (i + 5) < chars.length是因为防止最后一个是<img/
-				if (chars[i] == '<' && (i + 5) < chars.length && chars[i + 1] == 'i'
-						&& chars[i + 2] == 'm' && chars[i + 3] == 'g') {
-					append = false;
-				}
-				if (!append) {
-					if (chars[i] == '>' && chars[i - 1] == '/') {
-						append = true;
-						continue;
-					}
-				}
-				if (append) {
-					sb.append(chars[i]);
-				}
-			}
-		} else {
-			sb.append(content);
+		content = HtmlFilter.filterHtml(content, sb);
+		if (content.length() > 150) {
+			content.substring(0, 150);// 只显示150个字
 		}
-		abstractContent = sb.toString();
+		abstractContent = content;
 	}
 
 	public int getId() {

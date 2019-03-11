@@ -22,9 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
-import com.ajie.api.weixin.vo.JsConfig;
 import com.ajie.blog.blog.BlogService;
-import com.ajie.blog.blog.RedisBlog;
 import com.ajie.blog.blog.exception.BlogException;
 import com.ajie.blog.comment.CommentService;
 import com.ajie.blog.controller.vo.BlogVo;
@@ -38,11 +36,9 @@ import com.ajie.chilli.picture.PictureException;
 import com.ajie.chilli.picture.PictureService;
 import com.ajie.chilli.utils.TimeUtil;
 import com.ajie.chilli.utils.Toolkits;
-import com.ajie.chilli.utils.common.JsonUtils;
 import com.ajie.dao.pojo.TbBlog;
 import com.ajie.dao.pojo.TbUser;
 import com.ajie.resource.ResourceService;
-import com.ajie.resource.WeixinResource;
 import com.ajie.sso.user.UserService;
 
 /**
@@ -69,6 +65,33 @@ public class BlogController {
 	private RedisClient redisClient;
 	@Resource
 	private ResourceService resource;
+	@Resource
+	private String stopCommand;
+	@Resource
+	private String admin;
+
+	/**
+	 * 关闭服务器
+	 * 
+	 * @param request
+	 */
+	@RequestMapping("/stop.do")
+	public void stop(HttpServletRequest request, HttpServletResponse response) {
+		String passwd = request.getParameter("passwd");
+		if (null != passwd && stopCommand.equals(passwd)) {
+			logger.info("无用户模式下操作关闭服务器");
+			System.exit(0);// 在sso系统没有启动的情况下关闭
+		}
+		TbUser user = userService.getUser(request);
+		if (null == user) {
+			return;
+		}
+		if (!admin.equals(user.getName())) {
+			return;
+		}
+		logger.info(user.getName() + "正在操作关闭服务器");
+		System.exit(0);
+	}
 
 	/**
 	 * 首页路径
@@ -86,7 +109,7 @@ public class BlogController {
 			request.setAttribute("userid", user.getId());
 		}
 		// 获取微信配置
-		WeixinResource wx = resource.getWeixinResource();
+		/*WeixinResource wx = resource.getWeixinResource();
 		JsConfig config = null;
 		if (null != wx) {
 			config = wx.getJsConfiig();
@@ -98,7 +121,7 @@ public class BlogController {
 		}
 		if (null == config) {
 			request.setAttribute("config", "");
-		}
+		}*/
 		return prefix + "index";
 	}
 
@@ -119,7 +142,7 @@ public class BlogController {
 		}
 		int id = Toolkits.toInt(request.getParameter("id"), 0);
 		// 更新博客的浏览数
-		RedisBlog redisBlog = new RedisBlog(redisClient, id);
+		/*RedisBlog redisBlog = new RedisBlog(redisClient, id);
 		redisBlog.updateReadNum(1);
 		// 获取微信配置
 		WeixinResource wx = resource.getWeixinResource();
@@ -134,7 +157,7 @@ public class BlogController {
 		}
 		if (null == config) {
 			request.setAttribute("config", "");
-		}
+		}*/
 		request.setAttribute("id", id);
 		return prefix + "blog";
 	}
@@ -145,14 +168,14 @@ public class BlogController {
 	 * @param request
 	 * @return
 	 */
-	private String getRequestUrl(HttpServletRequest request) {
+/*	private String getRequestUrl(HttpServletRequest request) {
 		String url = request.getRequestURL().toString();
 		String query = request.getQueryString();
 		if (null != query) {
 			url += "?" + query;
 		}
 		return url;
-	}
+	}*/
 
 	/**
 	 * 添加或编辑博客页面
@@ -164,6 +187,12 @@ public class BlogController {
 	@RequestMapping("/addblog.do")
 	public String addblog(HttpServletRequest request, HttpServletResponse response) {
 		String id = request.getParameter("id");
+		TbUser user = userService.getUser(request);
+		if (null != user) {
+			request.setAttribute("username", user.getName());
+			request.setAttribute("userheader", user.getHeader());
+			request.setAttribute("userid", user.getId());
+		}
 		request.setAttribute("id", id);
 		return prefix + "addblog";
 	}
@@ -185,7 +214,7 @@ public class BlogController {
 	@RequestMapping("/loadblogs")
 	public ResponseResult loadblogs(HttpServletRequest request, HttpServletResponse response) {
 		String tag = request.getParameter("tag");
-		//小程序请求tag没带过来时，拿到的竟然是带引号的"null"，坑啊
+		// 小程序请求tag没带过来时，拿到的竟然是带引号的"null"，坑啊
 		List<TbBlog> blogs = null;
 		if (null == tag || "null".equals(tag)) {
 			blogs = blogService.getBlogs(null, 0, null);

@@ -18,7 +18,6 @@
 	var NIGHT_COOKIE_VAL = "night";
 	//true切换夜间，false切换白天
 	function toggleDarkMode(bool) {
-		console.log("boolean"+bool);
 		var toggle = typeof bool === 'boolean' ? bool : undefined;
 		if(undefined === toggle) { //切换
 			var isDark = isDarkMode();

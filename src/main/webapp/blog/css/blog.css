@@ -8,11 +8,11 @@ html, body {overflow: hidden;overflow-y: auto;background-color: #f5f6f7;}
 .header-navi>.user-header div:nth-child(2){margin-left: 10px;color: #337ab7}
 .header-navi>.user-header>img{width: 25px; height: 25px;border-radius: 50%;}
 .login-btn{color: blue}
-.addblog{padding: 0 10px 0 20px; vertical-align: top;background: url('/blog/images/edit.jpg') no-repeat left center;background-size: 20px;}
+.addblog{cursor: pointer;padding: 0 10px 0 20px; vertical-align: top;background: url('/blog/images/edit.jpg') no-repeat left center;background-size: 20px;}
 /* 内容 */
 .container {margin-top: 55px;margin-bottom: 20px;}
 .content{line-height: 25px;font-size: 16px;}
-.center-main {padding: 20px;background: #fff;border-bottom:1px solid #eee;}
+.center-main {padding: 20px;background: #fff;border-bottom:1px solid #eee;overflow: scroll;}
 .center-main>.title{font-size: 22px;font-weight: bold;}
 .center-main>section{padding: 5px 0;}
 .user-list>span{display: inline-block;padding: 0 5px;}
@@ -27,7 +27,8 @@ html, body {overflow: hidden;overflow-y: auto;background-color: #f5f6f7;}
 .footer-code{background: #fff;padding: 15px;}
 .footer-code>.footer-qr-code{display: flex;}
 .footer-qr-code img{width: 100%;}
-
+.col-green{color:green}
+.col-red{color: red}
 /* 评论区 */
 .comment{background: #fff;padding: 20px 20px 10px 20px;;display: flex}
 .comment img{width: 35px;height: 35px;border-radius: 50%;}
@@ -80,5 +81,7 @@ html, body {overflow: hidden;overflow-y: auto;background-color: #f5f6f7;}
 /**PC桌面*/
 @media screen and (min-width: 1100px){
 	.right-info{width: 250px;}
+	/* 隐藏菜单 */
+	.operating {display: none !important;}
 }
 

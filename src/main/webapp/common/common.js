@@ -17,6 +17,19 @@
 	var EMPTY = {}; 
 	/**本地储存*/
     var _storage = localStorage;
+     //代理字符串
+    var userAgent = navigator.userAgent.toLowerCase();
+      // 移动端常见的浏览器类型判断
+    var BROWSER = {
+        // ie10及以下版本的判断
+        ie: !!DOC.all,
+        android: userAgent.indexOf("android") > -1 || userAgent.indexOf("linux") > -1,
+        iphone: userAgent.indexOf("iphone") > -1,
+        mobile: userAgent.indexOf("mobile") > -1,
+        ipad: userAgent.indexOf("ipad") > -1,
+        //是否在微信浏览器环境中
+        weixin: userAgent.indexOf("micromessenger") > -1
+    };
 	$.extend($.fn , {
 		getWindow: function(){
 			return new WindowPlugin(this);
@@ -428,6 +441,21 @@
 			}
 			return bool;
 		},
+
+		//判断是否为指定浏览器
+		isBrowser:function(browser){
+			return !!BROWSER[browser]
+		},
+
+		/**转小写*/
+		lowerCase: function(src){
+			if(!src || !src.length){
+				return "";
+			}
+			return src.toLocaleLowerCase();
+		},
 	})
+
+
 
 })()
