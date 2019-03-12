@@ -224,9 +224,7 @@ window.addEventListener("error" , function(e){
 				<img src="[userHeader]">
 			</div>
 			<div class="right-comment-info">
-				<span class="commenter">[userName]：</span>
-				<span>[content]</span>
-				<span class="create-date">（[createDate]	#[order]楼）</span>
+				<span class="commenter">[userName]：</span><span>[content]</span><span class="create-date">（[createDate]	#[order]楼）</span>
 			</div>
 		</section>
 	</script>

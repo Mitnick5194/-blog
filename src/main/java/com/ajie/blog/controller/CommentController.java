@@ -77,7 +77,7 @@ public class CommentController {
 		// 对html标签进行转义，防xss注入
 		content = HtmlFilter.escape(content);
 		try {
-			commentService.createComment(content, blogId, user.getId());
+			commentService.createComment(content, blogId, user);
 			return ResponseResult.newResult(ResponseResult.CODE_SUC, "发布成功");
 		} catch (CommentException e) {
 			logger.warn("评论失败", e);

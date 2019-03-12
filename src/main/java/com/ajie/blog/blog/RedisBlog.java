@@ -16,106 +16,201 @@ import com.ajie.dao.pojo.TbBlog;
 public class RedisBlog {
 
 	public Logger logger = LoggerFactory.getLogger(RedisBlogVo.class);
-	private RedisBlogVo vo;
 	/** redis客户端 */
 	private RedisClient redisClient;
 
-	public RedisBlog(RedisClient redisClient, int blogId) {
+	public RedisBlog(RedisClient redisClient) {
 		this.redisClient = redisClient;
-		vo = new RedisBlogVo();
-		vo.setId(blogId);
-		load();
 	}
 
-	private void load() {
+	/**
+	 * 获取缓存中对应的博客的数据
+	 * 
+	 * @param blogId
+	 * @return
+	 */
+	public RedisBlogVo getRedisBlog(int blogId) {
+		RedisBlogVo blogVo = null;
 		try {
-			RedisBlogVo blogVo = redisClient.hgetAsBean(BlogService.REDIS_PREFIX,
-					BlogService.REDIS_PREFIX + vo.getId(), RedisBlogVo.class);
-			if (null == blogVo)
+			blogVo = redisClient.hgetAsBean(BlogService.REDIS_PREFIX, BlogService.REDIS_PREFIX
+					+ blogId, RedisBlogVo.class);
+			if (null == blogVo) {
 				blogVo = new RedisBlogVo();
-			vo.setCollectnum(blogVo.getCollectnum());
-			vo.setReadnum(blogVo.getReadnum());
-			vo.setPraisenum(blogVo.getPraisenum());
-			vo.setCommentnum(blogVo.getCommentnum());
+			}
+			return blogVo;
 		} catch (RedisException e) {
 			logger.warn("从redis缓存中获取RedisBlogVo失败", e);
 		}
+		if (null == blogVo) {
+			blogVo = new RedisBlogVo();
+		}
+		return blogVo;
 	}
 
-	/**
-	 * 增加step个评论数
-	 * 
-	 * @param redisClient
-	 * @param step
-	 *            负数则为减少
-	 */
-	public void updateCommentNum(int step) {
-		vo.setCommentnum(vo.getCommentnum() + step);
-		save();
-	}
+	public class RedisBlogVo {
+		/** blog id */
+		private int id;
+		/** 评论数 */
+		private int commentnum;
+		/** 点赞数 */
+		private int praisenum;
+		/** 收藏数 */
+		private int collectnum;
+		/** 阅读数 */
+		private int readnum;
 
-	/**
-	 * 增加step个点赞数
-	 * 
-	 * @param redisClient
-	 * @param step
-	 *            负数则为减少
-	 */
-	public void updatePraiseNum(int step) {
-		vo.setPraisenum(vo.getPraisenum() + step);
-		save();
-	}
+		/**
+		 * 增加step个评论数
+		 * 
+		 * @param step
+		 *            负数则为减少
+		 */
+		public void updateCommentNum(int step) {
+			if (step == 0)
+				return;
+			commentnum += step;
+			save();
+		}
 
-	/**
-	 * 增加step个收藏数
-	 * 
-	 * @param redisClient
-	 * @param step
-	 *            负数则为减少
-	 */
-	public void updateCollectNum(int step) {
-		vo.setCollectnum(vo.getCollectnum() + step);
-		save();
-	}
+		/**
+		 * 增加1个评论数
+		 * 
+		 */
+		public void updateCommentNum() {
+			updateCommentNum(1);
+		}
 
-	/**
-	 * 增加step个阅读数
-	 * 
-	 * @param redisClient
-	 * @param step
-	 *            负数则为减少
-	 */
-	public void updateReadNum(int step) {
-		vo.setReadnum(vo.getReadnum() + step);
-		save();
-	}
+		/**
+		 * 增加step个点赞数
+		 * 
+		 * @param step
+		 *            负数则为减少
+		 */
+		public void updatePraiseNum(int step) {
+			if (0 == step)
+				return;
+			praisenum += step;
+			save();
+		}
 
-	private void save() {
-		try {
-			redisClient.hset(BlogService.REDIS_PREFIX, BlogService.REDIS_PREFIX + vo.getId(), vo);
-		} catch (RedisException e) {
+		/**
+		 * 增加1个点赞数
+		 * 
+		 */
+		public void updatePraiseNum() {
+			updatePraiseNum(1);
+		}
+
+		/**
+		 * 增加step个收藏数
+		 * 
+		 * @param step
+		 *            负数则为减少
+		 */
+		public void updateCollectNum(int step) {
+			if (0 == step)
+				return;
+			collectnum += step;
+			save();
+		}
+
+		/**
+		 * 增加1个收藏数
+		 * 
+		 */
+		public void updateCollectNum() {
+			updateCollectNum(1);
+		}
+
+		/**
+		 * 增加step个阅读数
+		 * 
+		 * @param redisClient
+		 * @param step
+		 *            负数则为减少
+		 */
+		public void updateReadNum(int step) {
+			if (0 == step)
+				return;
+			readnum += step;
+			save();
+		}
+
+		/**
+		 * 增加1个阅读数
+		 * 
+		 */
+		public void updateReadNum() {
+			updateReadNum(1);
+		}
+
+		private void save() {
 			try {
-				// 重试
-				redisClient.hset(BlogService.REDIS_PREFIX, BlogService.REDIS_PREFIX + vo.getId(),
-						vo);
-			} catch (RedisException e1) {
-				logger.warn("RedisBlogVo保存缓存失败", e1);
+				redisClient.hset(BlogService.REDIS_PREFIX, BlogService.REDIS_PREFIX + id, this);
+			} catch (RedisException e) {
+				try {
+					// 重试
+					redisClient.hset(BlogService.REDIS_PREFIX, BlogService.REDIS_PREFIX + id, this);
+				} catch (RedisException e1) {
+					logger.warn("RedisBlogVo保存缓存失败", e1);
+				}
 			}
 		}
-	}
 
-	/**
-	 * 赋值
-	 * 
-	 * @param blog
-	 * @return
-	 */
-	public TbBlog assign(TbBlog blog) {
-		blog.setCollectnum(vo.getCollectnum());
-		blog.setPraisenum(vo.getPraisenum());
-		blog.setReadnum(vo.getReadnum());
-		blog.setCommentnum(vo.getCommentnum());
-		return blog;
+		/**
+		 * 赋值
+		 * 
+		 * @param blog
+		 * @return
+		 */
+		public TbBlog assign(TbBlog blog) {
+			blog.setCollectnum(commentnum);
+			blog.setPraisenum(praisenum);
+			blog.setReadnum(readnum);
+			blog.setCommentnum(commentnum);
+			return blog;
+		}
+
+		public int getCommentnum() {
+			return commentnum;
+		}
+
+		public void setId(int id) {
+			this.id = id;
+		}
+
+		public int getId() {
+			return id;
+		}
+
+		public void setCommentnum(int commentnum) {
+			this.commentnum = commentnum;
+		}
+
+		public int getPraisenum() {
+			return praisenum;
+		}
+
+		public void setPraisenum(int praisenum) {
+			this.praisenum = praisenum;
+		}
+
+		public int getCollectnum() {
+			return collectnum;
+		}
+
+		public void setCollectnum(int collectnum) {
+			this.collectnum = collectnum;
+		}
+
+		public int getReadnum() {
+			return readnum;
+		}
+
+		public void setReadnum(int readnum) {
+			this.readnum = readnum;
+		}
+
 	}
 
 }

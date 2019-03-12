@@ -92,6 +92,10 @@
 		<div class="hits-content">
 			富文本编辑器尚未兼容手机宽度，可前往PC端获得更好体验！
 		</div>
+		<div>
+			<div>不再提醒</div>
+			<div>我知道了</div>	
+		</div>
 	</div>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/js/jquery-1.9.1.js"></script>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/common/common.js"></script>

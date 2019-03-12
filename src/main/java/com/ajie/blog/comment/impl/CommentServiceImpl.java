@@ -5,11 +5,15 @@ import java.util.List;
 
 import javax.annotation.Resource;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.ajie.blog.blog.BlogService;
 import com.ajie.blog.blog.RedisBlog;
+import com.ajie.blog.blog.RedisBlog.RedisBlogVo;
 import com.ajie.blog.blog.exception.BlogException;
+import com.ajie.blog.blog.impl.BlogServiceImpl;
 import com.ajie.blog.comment.CommentException;
 import com.ajie.blog.comment.CommentService;
 import com.ajie.chilli.cache.redis.RedisClient;
@@ -29,7 +33,7 @@ import com.ajie.sso.role.RoleUtils;
  */
 @Service
 public class CommentServiceImpl implements CommentService {
-
+	private static final Logger logger = LoggerFactory.getLogger(CommentServiceImpl.class);
 	@Resource
 	private TbCommentMapper mapper;
 	@Resource
@@ -38,17 +42,32 @@ public class CommentServiceImpl implements CommentService {
 	private RedisClient redisClient;
 
 	@Override
-	public TbComment createComment(String content, int blogId, int userId) throws CommentException {
-		if (null == content || blogId == 0 || userId == 0)
+	public TbComment createComment(String content, int blogId, TbUser user) throws CommentException {
+		if (null == content || blogId == 0)
 			throw new CommentException("评论失败，参数异常");
-		TbComment comment = new TbComment(content, blogId, userId);
+		if (null == user || user.getId() == 0)
+			throw new CommentException("会话过期，请重新登录");
+		TbComment comment = new TbComment(content, blogId, user);
 		int ret = mapper.insert(comment);
 		if (ret != 1)
 			throw new CommentException("评论失败");
 		// 更新评论数
-		RedisBlog redisBlog = new RedisBlog(redisClient, blogId);
-		redisBlog.updateCommentNum(1);
+		RedisBlog redisBlog = getRedisBlog();
+		if (null == redisBlog)
+			return comment;
+		RedisBlogVo vo = redisBlog.getRedisBlog(blogId);
+		vo.updateCommentNum();
 		return comment;
+	}
+
+	public RedisBlog getRedisBlog() {
+		BlogServiceImpl blogService = null;
+		if (blogService instanceof BlogServiceImpl) {
+			blogService = (BlogServiceImpl) this.blogService;
+			return blogService.getRedisBlog();
+		}
+		logger.warn("打开blog缓存失败，无法更新评论信息到缓存");
+		return null;
 	}
 
 	@Override
@@ -101,7 +120,7 @@ public class CommentServiceImpl implements CommentService {
 		List<TbComment> comments = mapper.selectByExample(ex);
 		if (null == comments)
 			return Collections.emptyList();
-		Collections.sort(comments,CREATE_DATE);
+		Collections.sort(comments, CREATE_DATE);
 		return comments;
 	}
 
@@ -113,7 +132,7 @@ public class CommentServiceImpl implements CommentService {
 		List<TbComment> comments = mapper.selectByExample(ex);
 		if (null == comments)
 			return Collections.emptyList();
-		Collections.sort(comments,CREATE_DATE);
+		Collections.sort(comments, CREATE_DATE);
 		return comments;
 	}
 

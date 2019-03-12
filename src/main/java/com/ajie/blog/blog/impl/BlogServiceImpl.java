@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.ajie.blog.blog.BlogService;
 import com.ajie.blog.blog.RedisBlog;
-import com.ajie.blog.blog.RedisBlogVo;
+import com.ajie.blog.blog.RedisBlog.RedisBlogVo;
 import com.ajie.blog.blog.exception.BlogException;
 import com.ajie.blog.comment.CommentService;
 import com.ajie.chilli.cache.redis.RedisClient;
@@ -46,10 +46,25 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 	@Resource
 	private RedisClient redisClient;
 
+	/** redis辅助 */
+	private RedisBlog redisBlog;
+
 	public BlogServiceImpl() {
 		// 定时对redis缓存数据进行处理
 		String ymd = TimeUtil.formatYMD(new Date());
-		new TimingTask(this, TimeUtil.parse(ymd + " 00:10"), 24 * 60 * 60 * 1000);// 零时十分，准时更新,每天这个时间执行
+		TimingTask.createTimingTask("blog-timing", this, TimeUtil.parse(ymd + " 00:10"),
+				24 * 60 * 60 * 1000);// 零时十分，准时更新,每天这个时间执行
+	}
+
+	public RedisBlog getRedisBlog() {
+		if (null == redisBlog) {
+			synchronized (redisBlog) {
+				if (null == redisBlog) {
+					redisBlog = new RedisBlog(redisClient);
+				}
+			}
+		}
+		return redisBlog;
 	}
 
 	@Override
@@ -338,7 +353,7 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 	 * @param blog
 	 */
 	private void assign(TbBlog blog) {
-		RedisBlog vo = new RedisBlog(redisClient, blog.getId());
+		RedisBlogVo vo = getRedisBlog().getRedisBlog(blog.getId());
 		vo.assign(blog);
 	}
 
@@ -349,7 +364,7 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 	 */
 	private void assign(List<TbBlog> blogs) {
 		for (TbBlog blog : blogs) {
-			RedisBlog vo = new RedisBlog(redisClient, blog.getId());
+			RedisBlogVo vo = getRedisBlog().getRedisBlog(blog.getId());
 			vo.assign(blog);
 		}
 	}
@@ -384,7 +399,7 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 	}
 
 	@Override
-	public List<TbBlog> getBlogByIds(List<Integer> ids){
+	public List<TbBlog> getBlogByIds(List<Integer> ids) {
 		if (null == ids || ids.isEmpty())
 			return emptyList();
 		TbBlogExample ex = new TbBlogExample();

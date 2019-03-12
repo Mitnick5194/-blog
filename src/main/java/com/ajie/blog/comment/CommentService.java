@@ -42,7 +42,7 @@ public interface CommentService {
 	 * @return
 	 * @throws CommentException
 	 */
-	TbComment createComment(String content, int blogId, int userId) throws CommentException;
+	TbComment createComment(String content, int blogId, TbUser user) throws CommentException;
 
 	/**
 	 * 删除一条评论

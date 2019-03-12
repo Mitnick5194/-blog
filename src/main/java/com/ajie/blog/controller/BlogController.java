@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 import com.ajie.blog.blog.BlogService;
+import com.ajie.blog.blog.RedisBlog;
+import com.ajie.blog.blog.RedisBlog.RedisBlogVo;
 import com.ajie.blog.blog.exception.BlogException;
 import com.ajie.blog.comment.CommentService;
 import com.ajie.blog.controller.vo.BlogVo;
@@ -142,9 +144,10 @@ public class BlogController {
 		}
 		int id = Toolkits.toInt(request.getParameter("id"), 0);
 		// 更新博客的浏览数
-		/*RedisBlog redisBlog = new RedisBlog(redisClient, id);
-		redisBlog.updateReadNum(1);
-		// 获取微信配置
+		RedisBlog redisBlog = new RedisBlog(redisClient);
+		RedisBlogVo vo = redisBlog.getRedisBlog(id);
+		vo.updateReadNum();
+		/*// 获取微信配置
 		WeixinResource wx = resource.getWeixinResource();
 		JsConfig config = null;
 		if (null != wx) {
@@ -168,14 +171,14 @@ public class BlogController {
 	 * @param request
 	 * @return
 	 */
-/*	private String getRequestUrl(HttpServletRequest request) {
-		String url = request.getRequestURL().toString();
-		String query = request.getQueryString();
-		if (null != query) {
-			url += "?" + query;
-		}
-		return url;
-	}*/
+	/*	private String getRequestUrl(HttpServletRequest request) {
+			String url = request.getRequestURL().toString();
+			String query = request.getQueryString();
+			if (null != query) {
+				url += "?" + query;
+			}
+			return url;
+		}*/
 
 	/**
 	 * 添加或编辑博客页面
