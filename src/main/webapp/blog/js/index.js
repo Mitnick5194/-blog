@@ -83,7 +83,8 @@
 	},]
 	var options = {
 		tapHide: true,
-		icons: icons
+		icons: icons,
+		transTimeout: 15000
 	}
 	$.createSuspendBtn(options);
 	
@@ -199,8 +200,7 @@
 		if("login" == type){
 			url += "login.do?ref="+location.href;
 		}else if("userinfo" == type){
-			url += "userinfo?id="+_this.attr("data-id");
-			url += "?id="+_this.attr("data-id");
+			url += "userinfo.do?id="+_this.attr("data-id");
 		}
 		
 		location.href = url;

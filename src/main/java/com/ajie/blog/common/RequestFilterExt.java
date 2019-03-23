@@ -1,8 +1,14 @@
 package com.ajie.blog.common;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -25,14 +31,17 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.ajie.api.ip.IpQueryApi;
 import com.ajie.api.ip.IpQueryVo;
 import com.ajie.chilli.remote.RemoteCmd;
 import com.ajie.chilli.remote.exception.RemoteException;
 import com.ajie.chilli.support.TimingTask;
 import com.ajie.chilli.support.Worker;
 import com.ajie.chilli.utils.TimeUtil;
+import com.ajie.chilli.utils.common.JsonUtils;
 import com.ajie.resource.ResourceService;
 import com.ajie.web.RequestFilter;
+import com.alibaba.fastjson.annotation.JSONField;
 
 /**
  * 对拦截器进行扩展，记录访问者并定时保存
@@ -46,7 +55,8 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 	private static final int TYPE_BACKUP = 1;
 	/** 命令类型 -- 执行回滚 */
 	private static final int TYPE_ROLLBACK = 2;
-	public static final String[] TABLE_HEADER = { "key\t", "count\t", "ip\t", "date\t", "address\n" };
+	public static final String[] TABLE_HEADER = { "key\t", "count\t", "ip\t", "date\t",
+			"address\r\n" };
 	/** 访问记录 key是ip去除. */
 	private Map<String, Access> accessRecord;
 	/** 制表符ASCII码 \t */
@@ -55,6 +65,10 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 	public static final byte LR = 10;
 	/** 归位符ASCII码 \r */
 	public static final byte CR = 13;
+	/** 文本分界符 */
+	public static final char BOUNDARY = HT;
+
+	public static final String DEFAULT_CHARSET = "utf-8";
 	/** 远程命令服务 */
 	private RemoteCmd cmd;
 	/** 资源服务 */
@@ -69,7 +83,7 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		accessRecord = new HashMap<String, Access>();
 		String ymd = TimeUtil.formatYMD(new Date());
 		TimingTask.createTimingTask("access-info-save", this, TimeUtil.parse(ymd + " 00:10"),
-				2 * 60 * 1000);// 每小时
+				60 * 1000);// 每小时
 	}
 
 	public void setRemoteCmd(RemoteCmd cmd) {
@@ -141,33 +155,8 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 			channel = raf.getChannel();
 			ByteBuffer buffer = ByteBuffer.allocate(512);
 			writeHeader(channel, buffer);
-			Iterator<Entry<String, Access>> it = map.entrySet().iterator();
-			while (it.hasNext()) {
-				buffer.clear();
-				Entry<String, Access> next = it.next();
-				Access access = next.getValue();
-				buffer.put(access.getKey().getBytes());
-				buffer.put(HT);
-				buffer.put(String.valueOf(access.getCount()).getBytes());
-				buffer.put(HT);
-				buffer.put(access.getIp().getBytes());
-				buffer.put(HT);
-				Date date = access.getDate();
-				if (null == date) {
-					date = new Date();
-				}
-				buffer.put(TimeUtil.formatDate(date).getBytes());
-				buffer.put(HT);
-				String address = access.getAddress();
-				if (null == address) {
-					address = "";
-				}
-				buffer.put(address.getBytes());
-				buffer.put(CR);
-				buffer.put(LR);
-				buffer.flip();
-				channel.write(buffer);
-			}
+			write2File(channel, buffer, map);
+			map = null;
 			clearRecord();
 			logger.info("访问记录已同步至文件");
 		} catch (Exception e) {
@@ -178,11 +167,129 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 			try {
 				channel.close();
 				raf.close();
+				channel = null;
+				raf = null;
 			} catch (IOException e) {
 			}
 
 		}
 
+	}
+
+	/**
+	 * 将内存中的数据读入
+	 * 
+	 * @param file
+	 * @return
+	 */
+	static private Map<String, Access> loadFile(RandomAccessFile file) {
+		Map<String, Access> map = new HashMap<String, Access>();
+		if (null == file)
+			return map;
+		try {
+			String line = file.readLine();// 先把第一行表头读掉
+			// 分析每一行
+			while (null != (line = file.readLine())) {
+				if ("".equals(line))
+					continue;
+				byte[] bytes = line.getBytes("ISO-8859-1");
+				int cursor = 0;
+				int preIdx = 0;
+				String[] split = new String[5];
+				for (int i = 0; i < bytes.length; i++) {
+					if (bytes[i] == HT) {
+						String str = new String(bytes, preIdx, i - preIdx, DEFAULT_CHARSET);
+						split[cursor++] = str.trim();
+						preIdx = i + 1;
+					}
+
+				}
+				// 最后一组没有HT
+				String str = new String(bytes, preIdx, bytes.length - preIdx, DEFAULT_CHARSET);
+				split[cursor] = str.trim();
+				int count = 0;
+				String scount = split[1];
+				try {
+					count = Integer.valueOf(scount);
+				} catch (NumberFormatException e) {
+					logger.error("访问数解析失败，使用0代替,scount=" + scount, e);
+				}
+				Access access = new Access(split[0], count, split[2]);
+				String dstr = split[3];
+				try {
+					access.setDate(TimeUtil.parse(dstr));
+				} catch (Exception e) {// 这里不需要太严谨
+					access.setDate(new Date());
+				}
+				access.setAddress(split[4]);
+				map.put(access.getKey(), access);
+			}
+		} catch (Exception e) {
+			logger.error("无法将访问记录文件读入", e);
+		}
+		return map;
+	}
+
+	/**
+	 * 写入文件
+	 * 
+	 * @param channel
+	 * @param buffer
+	 * @throws IOException
+	 */
+	static private void write2File(FileChannel channel, ByteBuffer buffer, Map<String, Access> map)
+			throws IOException {
+		Iterator<Entry<String, Access>> it = map.entrySet().iterator();
+		while (it.hasNext()) {
+			buffer.clear();
+			Entry<String, Access> next = it.next();
+			Access access = next.getValue();
+			buffer.put(access.getKey().getBytes(DEFAULT_CHARSET));
+			buffer.put(HT);
+			buffer.put(String.valueOf(access.getCount()).getBytes(DEFAULT_CHARSET));
+			buffer.put(HT);
+			buffer.put(access.getIp().getBytes(DEFAULT_CHARSET));
+			buffer.put(HT);
+			Date date = access.getDate();
+			if (null == date) {
+				date = new Date();
+			}
+			buffer.put(TimeUtil.formatDate(date).getBytes(DEFAULT_CHARSET));
+			buffer.put(HT);
+			String address = access.getAddress();
+			if (null == address) {
+				address = "";
+			}
+			buffer.put(address.getBytes(DEFAULT_CHARSET));
+			buffer.put(CR);
+			buffer.put(LR);
+			buffer.flip();
+			channel.write(buffer);
+		}
+	}
+
+	/**
+	 * 表头
+	 * 
+	 * @param channel
+	 * @param buffer
+	 * @throws UnsupportedEncodingException
+	 */
+	private void writeHeader(FileChannel channel, ByteBuffer buffer)
+			throws UnsupportedEncodingException {
+		if (null == channel || null == buffer)
+			return;
+		buffer.clear();
+		for (int i = 0; i < TABLE_HEADER.length; i++) {
+			String item = TABLE_HEADER[i];
+			buffer.put(item.getBytes(DEFAULT_CHARSET));
+		}
+		buffer.flip();
+		try {
+			channel.write(buffer);
+		} catch (IOException e) {
+			logger.error("", e);
+		}
 	}
 
 	/** 判断是否为本机或本地 */
@@ -194,35 +301,6 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		if ("255".equals(serverId))
 			return true;
 		return false;
-	}
-
-	/**
-	 * 表头
-	 * 
-	 * @param channel
-	 * @param buffer
-	 */
-	private void writeHeader(FileChannel channel, ByteBuffer buffer) {
-		if (null == channel || null == buffer)
-			return;
-		for (int i = 0; i < TABLE_HEADER.length; i++) {
-			buffer.clear();
-			String item = TABLE_HEADER[i];
-			buffer.put(item.getBytes());
-			if (i == TABLE_HEADER.length - 1) {
-				buffer.put(CR);
-				buffer.put(LR);
-			} else {
-				buffer.put(HT);
-			}
-			buffer.flip();
-			try {
-				channel.write(buffer);
-			} catch (IOException e) {
-				logger.error("", e);
-			}
-
-		}
 	}
 
 	/**
@@ -293,10 +371,10 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 			Access access = map.get(key);
 			if (null == access) {
 				// 没有，添加
-				map.put(key, accessRecord.get(key));
+				map.put(key, next.getValue());
 			} else {
 				// 已经存在了，将内存中的记录的访问值加上文件中的访问值
-				access.setCount(access.getCount() + map.get(key).getCount());
+				access.setCount(access.getCount() + next.getValue().getCount());
 				map.put(access.getKey(), access); // 修改完记录后覆盖掉记录里的值
 			}
 		}
@@ -314,7 +392,7 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		String key = ip.replaceAll("\\.", "");// 去除“.”
 		Access access = accessRecord.get(key);
 		if (null == access) {
-			access = new Access(key, 1, ip);
+			access = new Access(key, 0, ip);
 		}
 		accessRecord.put(key, access);
 		access.setDate(new Date());
@@ -326,14 +404,15 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 			@Override
 			public void run() {
 				try {
-					IpQueryVo vo = resourceService.queryIpAddress(acc.getIp(), 0);
+					IpQueryVo vo = resourceService.queryIpAddress(acc.getIp(),
+							IpQueryApi.PROVIDER_IPSTACK.getId());
 					if (null == vo) {
 						if (logger.isTraceEnabled()) {
 							logger.trace("查询ip失败,ip:" + acc.getIp());
 						}
 						return;
 					}
-					String address = vo.getRegion() + "省" + vo.getCity();
+					String address = vo.getProvince() + "省" + vo.getCity();
 					acc.setAddress(address);
 				} catch (Exception e) {
 					logger.error("查询ip失败", e);
@@ -343,54 +422,158 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		});
 	}
 
-	/**
-	 * 将内存中的数据读入
-	 * 
-	 * @param file
-	 * @return
-	 */
-	static private Map<String, Access> loadFile(RandomAccessFile file) {
+	public static void main(String[] args) {
+		File file = new File("access.txt");
 		Map<String, Access> map = new HashMap<String, Access>();
-		if (null == file)
-			return map;
+		Access access = new Access("127001", 1, "127.0.0.1");
+		access.setDate(new Date());
+		access.setAddress("广东省广州市");
+		Access access2 = new Access("19216801", 2, "192.168.0.1");
+		access2.setDate(new Date());
+		map.put("127001", access);
+		map.put("19216801", access2);
+		OutputStream out = null;
 		try {
-			String line = file.readLine();// 先把第一行表头读掉
-			// 分析每一行
-			while (null != (line = file.readLine())) {
-				if ("".equals(line))
-					continue;
-				byte[] bytes = line.getBytes();
-				int cursor = 0;
-				int preIdx = 0;
-				String[] split = new String[5];
-				for (int i = 0; i < bytes.length; i++) {
-					if (bytes[i] == HT) {
-						String str = new String(
-								new String(bytes, preIdx, i - preIdx, "ISO-8859-1").getBytes(),
-								"utf-8");
-						split[cursor++] = str.trim();
-						preIdx = i;
-					}
+			out = new FileOutputStream(file);
+			byte[] bytes = toBytes(map);
+			out.write(bytes);
+			out.flush();
+			out.close();
+			out = null;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+		System.out.println("start load file");
+		InputStream in = null;
+		ByteArrayOutputStream array = new ByteArrayOutputStream();
+		Map<String, Access> entry = null;
+		try {
+			in = new FileInputStream(file);
+			int n = 0;
+			byte[] bytes = new byte[512];
+			while ((n = in.read(bytes)) != -1) {
+				array.write(bytes, 0, n);
+			}
+			byte[] byteArray = array.toByteArray();
+			entry = toEntry(byteArray);
+			if (null != entry && !entry.isEmpty()) {
+				Iterator<Entry<String, Access>> it = entry.entrySet().iterator();
+				while (it.hasNext()) {
+					Entry<String, Access> next = it.next();
+					Access value = next.getValue();
+					System.out.println(value.toString());
+				}
+			}
+			array.close();
+			array = null;
 
-				}
-				int count = 0;
-				String scount = split[1];
+		} catch (IOException e) {
+		}
+
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		// 在写入内存
+		if (null == entry) {
+			return;
+		}
+		Access access3 = new Access("127002", 1, "127.0.0.1");
+		access3.setDate(new Date());
+		access3.setAddress("广东省广州市");
+		Access access4 = new Access("19216802", 2, "192.168.0.1");
+		access4.setDate(new Date());
+		entry.put("127002", access3);
+		entry.put("19216802", access4);
+		byte[] bytes = toBytes(entry);
+		try {
+			out = new FileOutputStream(file);
+			out.write(bytes);
+			out.flush();
+			out.close();
+			out = null;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println("done");
+	}
+
+	public static byte[] toBytes(Map<String, Access> data) {
+		if (null == data || data.isEmpty())
+			return new byte[0];
+		Iterator<Entry<String, Access>> it = data.entrySet().iterator();
+		StringBuilder sb = new StringBuilder();
+		while (it.hasNext()) {
+			Entry<String, Access> next = it.next();
+			Access access = next.getValue();
+			sb.append(access.getKey());
+			sb.append(BOUNDARY);
+			sb.append(access.getIp());
+			sb.append(BOUNDARY);
+			sb.append(access.getCount());
+			sb.append(BOUNDARY);
+			sb.append(TimeUtil.formatDate(access.getDate()));
+			sb.append(BOUNDARY);
+			sb.append(access.getAddress() == null ? "" : access.getAddress());
+			sb.append((char) CR).append((char) LR);
+		}
+		byte[] bytes = null;
+		try {
+			bytes = (sb.toString()).getBytes("utf-8");
+		} catch (UnsupportedEncodingException e) {
+			bytes = (sb.toString()).getBytes();
+		}
+		return bytes;
+
+	}
+
+	public static Map<String, Access> toEntry(byte[] bytes) {
+		String[] split = new String[5];
+		int cursor = 0;
+		int preIdx = 0;
+		Map<String, Access> map = new HashMap<String, Access>();
+		String line;
+		for (int i = 0; i < bytes.length; i++) {
+			if (bytes[i] == BOUNDARY) {
 				try {
-					count = Integer.valueOf(scount);
-				} catch (NumberFormatException e) {
-					logger.error("访问数解析失败，使用0代替,scount=" + scount, e);
+					line = new String(bytes, preIdx, i - preIdx, "utf-8");
+				} catch (UnsupportedEncodingException e) {
+					line = new String(bytes, preIdx, preIdx - i);
 				}
-				Access access = new Access(split[0], count, split[2]);
+				split[cursor++] = line.trim();
+				preIdx = i + 1;
+			} else if (bytes[i] == LR && bytes[i - 1] == CR) { // 换行 \r\n
+				// 结束一行
+				try {
+					line = new String(bytes, preIdx, i - preIdx, "utf-8");
+				} catch (UnsupportedEncodingException e) {
+					line = new String(bytes, preIdx, preIdx - i);
+				}
+				split[cursor] = line.trim();
+				preIdx = i + 1;
+				int count = 0;
+				try {
+					count = Integer.valueOf(split[2]);
+				} catch (Exception e) {
+					count = 1;
+				}
+				Access access = new Access(split[0], count, split[1]);
 				String dstr = split[3];
 				try {
 					access.setDate(TimeUtil.parse(dstr));
 				} catch (Exception e) {// 这里不需要太严谨
 					access.setDate(new Date());
 				}
-				map.put(access.getKey(), access);
+				access.setAddress(split[4]);
+				map.put(split[0], access);
+				cursor = 0; // 游标重新计算
 			}
-		} catch (Exception e) {
-			logger.error("无法将访问记录文件读入", e);
 		}
 		return map;
 	}
@@ -400,6 +583,7 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		private String key;
 		private String ip;
 		private int count;
+		@JSONField(format = "yyyy-MM-dd HH:mm:ss")
 		private Date date;
 		private String address;
 
@@ -447,6 +631,10 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 
 		public void setAddress(String address) {
 			this.address = address;
+		}
+
+		public String toString() {
+			return JsonUtils.toJSONString(this);
 		}
 
 	}

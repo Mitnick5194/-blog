@@ -15,7 +15,7 @@ import com.ajie.dao.pojo.TbBlog;
  */
 public class RedisBlog {
 
-	public Logger logger = LoggerFactory.getLogger(RedisBlogVo.class);
+	static public Logger logger = LoggerFactory.getLogger(RedisBlogVo.class);
 	/** redis客户端 */
 	private RedisClient redisClient;
 
@@ -37,6 +37,7 @@ public class RedisBlog {
 			if (null == blogVo) {
 				blogVo = new RedisBlogVo();
 			}
+			blogVo.injectRedisBlog(this);
 			return blogVo;
 		} catch (RedisException e) {
 			logger.warn("从redis缓存中获取RedisBlogVo失败", e);
@@ -44,10 +45,11 @@ public class RedisBlog {
 		if (null == blogVo) {
 			blogVo = new RedisBlogVo();
 		}
+		blogVo.injectRedisBlog(this);
 		return blogVo;
 	}
 
-	public class RedisBlogVo {
+	static public class RedisBlogVo {
 		/** blog id */
 		private int id;
 		/** 评论数 */
@@ -58,6 +60,16 @@ public class RedisBlog {
 		private int collectnum;
 		/** 阅读数 */
 		private int readnum;
+
+		private transient RedisBlog redisBlog;
+
+		public RedisBlogVo() {
+
+		}
+
+		public void injectRedisBlog(RedisBlog redisBlog) {
+			this.redisBlog = redisBlog;
+		}
 
 		/**
 		 * 增加step个评论数
@@ -146,11 +158,13 @@ public class RedisBlog {
 
 		private void save() {
 			try {
-				redisClient.hset(BlogService.REDIS_PREFIX, BlogService.REDIS_PREFIX + id, this);
+				redisBlog.redisClient.hset(BlogService.REDIS_PREFIX, BlogService.REDIS_PREFIX + id,
+						this);
 			} catch (RedisException e) {
 				try {
 					// 重试
-					redisClient.hset(BlogService.REDIS_PREFIX, BlogService.REDIS_PREFIX + id, this);
+					redisBlog.redisClient.hset(BlogService.REDIS_PREFIX, BlogService.REDIS_PREFIX
+							+ id, this);
 				} catch (RedisException e1) {
 					logger.warn("RedisBlogVo保存缓存失败", e1);
 				}
@@ -163,12 +177,11 @@ public class RedisBlog {
 		 * @param blog
 		 * @return
 		 */
-		public TbBlog assign(TbBlog blog) {
+		public void assign(TbBlog blog) {
 			blog.setCollectnum(commentnum);
 			blog.setPraisenum(praisenum);
 			blog.setReadnum(readnum);
 			blog.setCommentnum(commentnum);
-			return blog;
 		}
 
 		public int getCommentnum() {

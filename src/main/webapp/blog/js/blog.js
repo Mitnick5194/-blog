@@ -278,6 +278,9 @@
 		    		loginFrame.hide();
 		    		changeHeader(data.data);
 		    	})
+		    },
+		    error: function(e){
+		    	$.showToast(e.statusText);
 		    }
 		});
 	})
@@ -288,9 +291,8 @@
 		var header = $("#iUserHeader");
 		header.find(".login-btn").addClass("hidden");
 		var user = header.find(".user-info");
-		user.removeClass("hidden");
 		user.attr("data-id",data.id).attr("src",data.header);
-		
+		user.removeClass("hidden");
 	}
 	
 	$(".user").on("click",function(e){
@@ -315,8 +317,7 @@
 		if("login" == type){
 			url += "login.do?ref="+location.href;
 		}else if("userinfo" == type){
-			url += "userinfo?id="+_this.attr("data-id");
-			url += "?id="+_this.attr("data-id");
+			url += "userinfo.do?id="+_this.attr("data-id");
 		}
 		
 		location.href = url;

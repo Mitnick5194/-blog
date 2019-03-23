@@ -35,7 +35,7 @@ window.addEventListener("error" , function(e){
 				<div class="user-header">
 				<c:choose>
 					<c:when test="${not empty userid }">
-						<img  class="user" data-id="${userid }" data-type="userinfo"  src="${userheader }" />
+						<img  class="user userinfo" data-id="${userid }" data-type="userinfo"  src="${userheader }" />
 					</c:when>
 					<c:otherwise>
 						<div class="login-btn user" data-type="login" data-uri="sso/login.do">登录/注册</div>
@@ -224,7 +224,7 @@ window.addEventListener("error" , function(e){
 				<img src="[userHeader]">
 			</div>
 			<div class="right-comment-info">
-				<span class="commenter">[userName]：</span><span>[content]</span><span class="create-date">（[createDate]	#[order]楼）</span>
+				<span class="commenter">[userName]：</span><span>[content]<span class="create-date">（[createDate]	#[order]楼）</span></span>
 			</div>
 		</section>
 	</script>

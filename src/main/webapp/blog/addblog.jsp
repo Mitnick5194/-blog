@@ -16,11 +16,11 @@
 /* 导航 */
 .header-navi{z-index: 1000; position: fixed;top:0;left:0;width: 100%;height: 45px;line-height: 45px;background: #fff;text-align: right;border-bottom: 1px solid #eee;}
 .header-navi>div{display: inline-block;}
-.header-navi>.user-header{display: inline-flex;align-items: center;height: 100%;margin-right: 15px;cursor: pointer;}
+.header-navi>.user-header{display: inline-flex;align-items: center;height: 100%;margin-right: 25px;cursor: pointer;}
 .header-navi>.user-header div:nth-child(2){margin-left: 10px;color: #337ab7}
 .header-navi>.user-header>img{width: 25px; height: 25px;border-radius: 50%;}
 .login-btn{color: blue}.main>.editor-area{width: 100%;}
-.form>input[name=title]{width: 98%;height: 40px;line-height: 40px;background: #eee;margin-bottom: 5px;padding: 0 10px;border: none;font-size: 16px;}
+.form>input[name=title]{width: 90%;height: 40px;line-height: 40px;background: #eee;margin-bottom: 5px;padding: 0 10px;border: none;font-size: 16px;}
 .labels{height: 30px;line-height: 30px;align-items: center;padding:10px 0;}
 .add-label{position: relative;color: #349EDF;cursor: pointer;}
 /* .add-label:before{content:'';position: absolute;width: 20px;height: 20px;border-radius: 3px;background:#349EDF;color:#fff;left: -25px;top: 5px;} */
@@ -36,7 +36,10 @@
 .hits-frame{width: 80%;}
 .hits-frame>div{padding:10px;}
 .hits-frame>.hits-title{background:#349EDF;text-align: center;color: #fff; }
-.hits-frame>.hits-content{padding: 25px 10px; }
+.hits-frame>.hits-content{padding: 25px 15px 0 15px; }
+.hit-btn{text-align: center;}
+.hit-btn>div{width:50%;overflow: hidden;text-overflow:ellipsis;white-space: nowrap;padding: 5px 0}
+.hit-btn div:nth-child(1){color: #349EDF;border-right:1px solid #888;width:50%;}
 /* 平板 */
 @media screen and (min-width: 768px){
 	.header-navi>.user-header{margin-right: 70px;}
@@ -92,9 +95,9 @@
 		<div class="hits-content">
 			富文本编辑器尚未兼容手机宽度，可前往PC端获得更好体验！
 		</div>
-		<div>
-			<div>不再提醒</div>
-			<div>我知道了</div>	
+		<div class="hit-btn flex">
+			<div class="hitsForbit">不再提醒</div>
+			<div class="hitsHide">我知道了</div>	
 		</div>
 	</div>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/js/jquery-1.9.1.js"></script>

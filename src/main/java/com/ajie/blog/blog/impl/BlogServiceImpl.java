@@ -49,6 +49,8 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 	/** redis辅助 */
 	private RedisBlog redisBlog;
 
+	private Object lock = new Object();
+
 	public BlogServiceImpl() {
 		// 定时对redis缓存数据进行处理
 		String ymd = TimeUtil.formatYMD(new Date());
@@ -58,7 +60,7 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 
 	public RedisBlog getRedisBlog() {
 		if (null == redisBlog) {
-			synchronized (redisBlog) {
+			synchronized (lock) {
 				if (null == redisBlog) {
 					redisBlog = new RedisBlog(redisClient);
 				}

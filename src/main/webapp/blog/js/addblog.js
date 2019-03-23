@@ -1,20 +1,27 @@
 (function(){
+	const HITS_CONTROL = "hit-control";//不再提醒缓存key,true不再提醒
 	var hits = $("#iHitsFrame").getWindow();
 	hits.setCloser(false);
 	hits.clickbackhide();
+	var winwid = $(window).width();
+	var isMinWidth = winwid < 768; //小屏幕，富文本高度处理一下
 	$(document).ready(function(){
-		var winwid = $(window).width();
-		if(winwid < 768){
+		var control = $.Storage.get(HITS_CONTROL);
+		if(!$.isEmptyObject(control) && control){
+			return;
+		}
+		if(isMinWidth){
 			hits.show();
 		}
 	})
 	var labelTemp = "<section><input type='text' /><span class='delLabelBtn'>x</span></section>";
 	var labelInputGruop = $("#iInputGruop");
 	var form = $("#iForm");
+	var height = isMinWidth ? 150 : 600;
 	  CKEDITOR.replace( 'editor' , {
      	 filebrowserImageUploadUrl: "imgupload.do",
      	 language : 'zh-cn',
-     	 height: 600
+     	 height: height
      } );
      
      $("#iBtn").on("click",function(){
@@ -135,6 +142,13 @@
  		
  		location.href = url;
  	}
+     
+     $("#iHitsFrame").on("click",".hitsForbit",function(){
+    	 $.Storage.set(HITS_CONTROL,true);
+    	 hits.hide();
+     }).on("click",".hitsHide",function(){
+    	  hits.hide();
+     })
  	
      
 })()

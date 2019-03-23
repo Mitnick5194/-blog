@@ -23,9 +23,12 @@ public class CommentVo {
 	}
 
 	public CommentVo(TbComment comment) {
-		this.id = comment.getId();
-		this.content = comment.getContent();
-		this.createDate = BlogUtil.handleDate(comment.getCreatetime());
+		id = comment.getId();
+		content = comment.getContent();
+		createDate = BlogUtil.handleDate(comment.getCreatetime());
+		userName = comment.getUsername();
+		userHeader = comment.getUserheader();
+		userId = comment.getUserid();
 	}
 
 	public int getId() {

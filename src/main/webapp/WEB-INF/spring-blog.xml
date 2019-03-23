@@ -22,8 +22,11 @@
 		<property name="redisClient" ref="redisClient" />
 		<property name="remoteCmd" ref="remoteCmd" />
 		<property name="resourceService" ref="resourceService" />
-		<!-- <property name="uriList"> <list> <value>*addblog*</value> </list> 
-			</property> -->
+		<property name="uriList">
+			<list>
+				<value>*addblog*</value>
+			</list>
+		</property>
 		<property name="ssoHost" value="${sso-host}" />
 		<property name="path" value="${access-record-path}" />
 	</bean>

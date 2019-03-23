@@ -12,7 +12,7 @@
 .modal-background-show{animation: modal_background_show .2s  ease-in-out;}
 
 .window-plugin-dialog{position: fixed;z-index: 1002;display: none;background-color: #ffffff;}
-.window-plugin-closer{position: absolute;width:36px;height: 36px;top: 15px;right: 15px;cursor: pointer;/* background-image: url('images/closer.png');background-position: center center;background-repeat: no-repeat; */}
+.window-plugin-closer{position: absolute;width:36px;height: 36px;top: 15px;right: 15px;cursor: pointer;background-image: url('images/closer.png');background-position: center center;background-repeat: no-repeat;}
 
 /*弹窗结束*/
 
@@ -26,11 +26,15 @@
 .content-text-icon{bottom: 15px;position: absolute; padding: 0 10px; width: calc(100% - 20px);-webkit-width: calc(100% - 20px); text-align: center;color: #fff;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;}
 .show-msg-loading-content{width: 100%;position: absolute;}
 
-.modal-dialog-show{animation: modal_dialog_show  .2s    ease-in-out;}
+/**侧边滑出窗口*/
+.slide-win-mask{position: fixed;top:0;left: 0;width: 100%;height: 100%;background-color: rgb(0,0,0);display: none;}
+.slide-win-dialog{transition: transform .3s ease-in-out;  position: absolute;top: 0;left: 0;width: 100%;min-height: 100%;background: #fff;z-index: 1500}
+/*动画*/
+.modal-dialog-show{animation: modal_dialog_show  .2s linear;}
 .modal-background-hide{animation: modal_background_hide .2s ease-in-out;animation-fill-mode: both; }
 .modal-dialog-hide{animation: modal_dialog_hide .2s ease-in-out;animation-fill-mode: both;}
-
-/*动画*/
+.slide-win-mask-show{animation: slide_win_mask_show .3s linear; animation-fill-mode: both;}
+.slide-win-mask-hide{animation: slide_win_mask_hide .3s linear; animation-fill-mode: both;}
 @keyframes  modal_dialog_show{
 	0%  {transform: scale(.5,.5);opacity:0;}
 	100% {transform: scale(1,1);opacity: 1}
@@ -59,4 +63,12 @@
 	from {opacity: 1;}
 	to {opacity: 0.25;}
 
+}
+@keyframes slide_win_mask_show{
+	from {opacity: 0;}
+	to {opacity: 1;}
+}
+@keyframes slide_win_mask_hide{
+	from {opacity: 1;}
+	to {opacity: 0;}
 }
