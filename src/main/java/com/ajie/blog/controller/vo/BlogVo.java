@@ -65,9 +65,21 @@ public class BlogVo {
 			content = content.substring(0, 399);
 		}
 		StringBuilder sb = new StringBuilder();
+		// 过滤完整的标签组
 		content = HtmlFilter.filterHtml(content, sb);
-		if (content.length() > 150) {
-			content.substring(0, 150);// 只显示150个字
+		if (content.length() > 200) {
+			content = content.substring(0, 200);// 只显示150个字
+		}
+		// 结束可能是<div class='' 需要手动处理一下
+		for (int i = content.length() - 1, j = 0; i >= 0; i--) {
+			if (++j == 50) { // 只检查后50个字符
+				break;
+			}
+			char ch = content.charAt(i);
+			if (ch == MARK_LEFT) {
+				content = content.substring(0, i - 1);
+				break;
+			}
 		}
 		abstractContent = content;
 	}

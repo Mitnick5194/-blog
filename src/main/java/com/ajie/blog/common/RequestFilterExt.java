@@ -83,7 +83,7 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		accessRecord = new HashMap<String, Access>();
 		String ymd = TimeUtil.formatYMD(new Date());
 		TimingTask.createTimingTask("access-info-save", this, TimeUtil.parse(ymd + " 00:10"),
-				60 * 1000);// 每小时
+				1*60*60 * 1000);// 每小时
 	}
 
 	public void setRemoteCmd(RemoteCmd cmd) {

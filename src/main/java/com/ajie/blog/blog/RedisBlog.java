@@ -38,6 +38,7 @@ public class RedisBlog {
 				blogVo = new RedisBlogVo();
 			}
 			blogVo.injectRedisBlog(this);
+			blogVo.setId(blogId);
 			return blogVo;
 		} catch (RedisException e) {
 			logger.warn("从redis缓存中获取RedisBlogVo失败", e);
@@ -46,6 +47,7 @@ public class RedisBlog {
 			blogVo = new RedisBlogVo();
 		}
 		blogVo.injectRedisBlog(this);
+		blogVo.setId(blogId);
 		return blogVo;
 	}
 
