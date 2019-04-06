@@ -20,7 +20,7 @@
 .header-navi>.user-header div:nth-child(2){margin-left: 10px;color: #337ab7}
 .header-navi>.user-header>img{width: 25px; height: 25px;border-radius: 50%;}
 .login-btn{color: blue}.main>.editor-area{width: 100%;}
-.form>input[name=title]{width: 90%;height: 40px;line-height: 40px;background: #eee;margin-bottom: 5px;padding: 0 10px;border: none;font-size: 16px;}
+.form>input[name=title]{width: 94%;height: 40px;line-height: 40px;background: #eee;margin-bottom: 5px;padding: 0 10px;border: none;font-size: 16px;}
 .labels{height: 30px;line-height: 30px;align-items: center;padding:10px 0;}
 .add-label{position: relative;color: #349EDF;cursor: pointer;}
 /* .add-label:before{content:'';position: absolute;width: 20px;height: 20px;border-radius: 3px;background:#349EDF;color:#fff;left: -25px;top: 5px;} */
@@ -40,6 +40,17 @@
 .hit-btn{text-align: center;}
 .hit-btn>div{width:50%;overflow: hidden;text-overflow:ellipsis;white-space: nowrap;padding: 5px 0}
 .hit-btn div:nth-child(1){color: #349EDF;border-right:1px solid #888;width:50%;}
+.center-main {padding: 20px;background: #fff;border-bottom:1px solid #eee;overflow: scroll;}
+.center-main>.title{font-size: 22px;font-weight: bold;}
+.center-main>section{padding: 5px 0;}
+.user-list>span{display: inline-block;padding: 0 5px;}
+.user-list span + span{border-left: 1px solid #888;}
+.tags>span{display: inline-block;}
+.tags span+span{border:1px solid #eee; border-radius:5px;margin-right: 5px;padding: 1px 10px}
+.btn-col{display: flex;padding: 10px 0;}
+.btn-col>div{width: 50%;text-align: center;}
+.btn-col div:nth-child(1){margin-right: 15px;}
+.btn-col div:nth-child(12){margin-left: 15px;}
 /* 平板 */
 @media screen and (min-width: 768px){
 	.header-navi>.user-header{margin-right: 70px;}
@@ -86,7 +97,27 @@
 			    	</div>
 			     </form> 
 			     <div class="submit-btn" id="iBtn">发布</div>
+			     <div class="btn-col">
+				     <div class="submit-btn"  id="iSaveDraft">保存草稿箱</div>
+				     <div class="submit-btn" id="iPre">预览</div>
+			     </div>
+			     
 			</div>
+		</div>
+	</div>
+	
+	<div class="pre-blog hidden" id="iPreBlog">
+		<div class="center-main darkMode" id="iBlogs">
+			<section class="title">预览的标题</section>
+			<section class="user-list">
+				<span>刚刚</span>
+				<span>${username }</span>
+				<span>阅读数 0</span>
+			</section>
+			<section class="tags">
+			</section>
+			<section class="content">
+			</section>
 		</div>
 	</div>
 	
@@ -101,12 +132,11 @@
 		</div>
 	</div>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/js/jquery-1.9.1.js"></script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/common/common.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/common/common.js?d=2019"></script>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/js/dark-mode-support.js"></script>
 	 <script src="${ pageContext.request.contextPath }/${serverId }/ckeditor/ckeditor.js"></script>
      <script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/blog/js/addblog.js?d=2019"></script>
       <script>
-          
 	   </script>
 </body>
 </html>

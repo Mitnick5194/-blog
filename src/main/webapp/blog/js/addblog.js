@@ -5,15 +5,25 @@
 	hits.clickbackhide();
 	var winwid = $(window).width();
 	var isMinWidth = winwid < 768; //小屏幕，富文本高度处理一下
+	var preBlog = $("#iPreBlog");
+	var preBlogPage = null;
 	$(document).ready(function(){
+		if(isMinWidth){
+			checkHits();
+			preBlogPage = preBlog.getSlideWindow({title: "文章预览"});
+		}else{
+			preBlog.css({width: "800px"})
+			preBlogPage = preBlog.getWindow();
+		}
+	})
+	function checkHits(){
 		var control = $.Storage.get(HITS_CONTROL);
 		if(!$.isEmptyObject(control) && control){
 			return;
 		}
-		if(isMinWidth){
-			hits.show();
-		}
-	})
+		hits.show();
+	}
+	//标签模板	
 	var labelTemp = "<section><input type='text' /><span class='delLabelBtn'>x</span></section>";
 	var labelInputGruop = $("#iInputGruop");
 	var form = $("#iForm");
@@ -45,10 +55,8 @@
     		 return false;
     	 }
     	 canClick = false;//防止多次点击，提交多次
-    	 var title = form.find("input[name=title]").val();
-    	 var content = CKEDITOR.instances.editor.getData();
-    	 var labels = getLabels();
-    	 if(!submitVertify(title , content , labels)){
+    	var datas = getDatas();
+    	 if(!submitVertify(datas.title , datas.content , datas.labels)){
     		 canClick = true;
     		 return false;
     	 }
@@ -56,11 +64,7 @@
     	 $.ajax({
     		 type: 'post',
     		 url: 'createblog.do',
-    		 data:{
-    			 title: title,
-    			 content: content,
-    			 labels: labels
-    		 },
+    		 data:datas,
     		 success: function(data){
     			 if(data == 200){
     				 $.showToast("发布成功",function(){
@@ -79,6 +83,17 @@
     	 })
      }
      
+     function getDatas(){
+    	 var title = form.find("input[name=title]").val();
+    	 var content = CKEDITOR.instances.editor.getData();
+    	 var labels = getLabels();
+    	 return {
+    		 title: title,
+    		 content: content,
+    		 labels: labels ? labels.join(",") : null
+    	 }
+     }
+     
      function getLabels(){
     	 var inputs = $("#iInputGruop").find("input");
     	 if(!inputs.length){
@@ -92,10 +107,7 @@
     		 }
     		 sb.push(input.val());
     	 }
-    	 if(!sb.length){
-    		 return null;
-    	 }
-    	 return sb.join(",");
+    	 return sb;
      }
      
      function submitVertify(title , content , labels){
@@ -136,8 +148,7 @@
  		if("login" == type){
  			url += "login.do?ref="+location.href;
  		}else if("userinfo" == type){
- 			url += "userinfo?id="+_this.attr("data-id");
- 			url += "?id="+_this.attr("data-id");
+ 			url += "userinfo.do?id="+_this.attr("data-id");
  		}
  		
  		location.href = url;
@@ -150,5 +161,24 @@
     	  hits.hide();
      })
  	
+     $("#iPre").on("click",function(){
+    	 var datas = getDatas();
+    	 if(!datas.content || !datas.content.length){
+    		 $.showToast("无预览内容");
+    		 return;
+    	 }
+    	 datas.labels = getLabels();
+    	 preBlog.find(".title").html(datas.title ? datas.title : "无标题");
+    	 var labs = ["<span>标签：</span>"];
+    	 if(datas.labels){
+    		 labs.push.apply(labs, datas.labels.map(function(item){
+        		 return "<span>"+item+"</span>"
+        	 }));
+    	 }
+    	 preBlog.find(".tags").html(labs.join(""));
+    	 preBlog.find(".content").html(datas.content);
+    	 preBlog.removeClass("hidden");
+    	 preBlogPage.show();
+     })
      
 })()

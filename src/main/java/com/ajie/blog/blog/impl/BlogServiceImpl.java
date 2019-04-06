@@ -163,36 +163,60 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 	public List<TbBlog> getBlogs(TbUser user, int state, TbUser operator) {
 		if (user != null && user.getId() == 0)
 			return emptyList();
-		// 不是管理员或su用户不能查看删除的博客
-		if (state == MARK_STATE_DELETE && !isAdmin(operator)) {
-			return emptyList();
+		MarkVo mark = getMarkVo(state);
+		if (state == 0) {// state为0，根据传入参数（user和operator）情况分析能获取的状态
+			mark.setMarks(BLOG_MARKS.getIds());
+			// 管理员能查看所有的状态
+			if (!isAdmin(operator)) {
+				// 不是管理员，一层一层的剥夺吧
+				mark.removeMark(MARK_STATE_DELETE);
+				if (null != operator && null != user) {
+					if (user.getId() != operator.getId()) {
+						removeSensitiveState(mark);
+						// TODO 如果是好友关系，则加上MARK_VISIT_FRIEND
+						// mark.setMark(MARK_VISIT_FRIEND);
+					}
+				} else {
+					removeSensitiveState(mark);
+				}
+			}
+		} else {
+			// 处理敏感状态
+			if (isState(state, MARK_STATE_DELETE) || isState(state, MARK_VISIT_SELF)
+					|| isState(state, MARK_VISIT_FRIEND) || isState(state, MARK_STATE_DRAFT)) {
+				if (!isAdmin(operator)) {
+					// 只有管理员能查看删除状态的博客
+					mark.removeMark(MARK_STATE_DELETE);
+					if (null != operator && null != user) {
+						if (user.getId() != operator.getId()) {
+							// 不是自己查看自己的
+							removeSensitiveState(mark);
+							// TODO 如果是好友关系，则加上MARK_VISIT_FRIEND
+							// mark.setMark(MARK_VISIT_FRIEND);
+						}
+					} else {
+						removeSensitiveState(mark);
+					}
+				}
+			}
 		}
-		// 不是自己或管理员操作，则不能获取私有的博客
-		/*if (state == VISIT_SELF.getId()
-				&& ((null != user && operator.getId() != user.getId()) || !isAdmin(operator))) {
+		// 状态处理完毕
+		state = mark.getMark();
+		if (0 == state)
 			return emptyList();
-		}*/
-		if (state == VISIT_SELF.getId()) {
-			if (null == operator) // 没有操作者即没有登录， 不能查看任何私有状态博客
-				return emptyList();
-			if (null == user && !isAdmin(operator)) // 不是管理员不能查看所有人的私有状态的博客
-				return emptyList();
-			if (user.getId() != operator.getId()) // 不是自己查看自己
-				return emptyList();
-		}
+		// 得到一堆状态，以或（|）的形式搜索
+		List<Integer> states = BLOG_MARKS.getStates(state);
 		TbBlogExample ex = new TbBlogExample();
 		Criteria criteria = ex.createCriteria();
 		if (null != user) {
 			criteria.andUseridEqualTo(user.getId());
 		}
-		if (state > 0) { // 指定状态
+		if (null == states || states.isEmpty()) {
 			criteria.andMarkEqualTo(state);
-		} else if (state == 0) { // 正常状态 排除删除和自己可见（如果不是自己操作）
-			criteria.andMarkNotEqualTo(MARK_STATE_DELETE);
-			if (null == user || operator.getId() != user.getId()) {
-				criteria.andMarkNotEqualTo(VISIT_SELF.getId());
-			}
+		} else {
+			criteria.andMarkIn(states);
 		}
+
 		List<TbBlog> blogs = mapper.selectByExample(ex);
 		if (null == blogs)
 			return emptyList();
@@ -200,6 +224,20 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 		// 获取缓存的数据并赋值
 		assign(blogs);
 		return blogs;
+	}
+
+	private boolean isState(int mark, int state) {
+		return (mark & state) == state;
+	}
+
+	/**
+	 * 移除敏感的状态，如果添加了新的状态且是敏感状态 需要在这里添加进去
+	 * 
+	 * @param mark
+	 */
+	private void removeSensitiveState(MarkVo mark) {
+		mark.removeMark(MARK_STATE_DELETE).removeMark(MARK_VISIT_SELF)
+				.removeMark(MARK_VISIT_FRIEND).removeMark(MARK_STATE_DRAFT);
 	}
 
 	@Override
@@ -397,6 +435,8 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 	 * @return
 	 */
 	private boolean isAdmin(TbUser user) {
+		if (null == user)
+			return false;
 		return checkRole(user.getRoleids(), "管理员") || checkRole(user.getRoleids(), "超级用户");
 	}
 

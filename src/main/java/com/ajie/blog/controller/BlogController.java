@@ -216,11 +216,13 @@ public class BlogController {
 	@ResponseBody
 	@RequestMapping("/loadblogs")
 	public ResponseResult loadblogs(HttpServletRequest request, HttpServletResponse response) {
+		TbUser user = userService.getUser(request);
 		String tag = request.getParameter("tag");
 		// 小程序请求tag没带过来时，拿到的竟然是带引号的"null"，坑啊
 		List<TbBlog> blogs = null;
 		if (null == tag || "null".equals(tag)) {
-			blogs = blogService.getBlogs(null, 0, null);
+			blogs = blogService.getBlogs(user, BlogService.MARK_STATE_DELETE
+					| BlogService.MARK_STATE_DRAFT | BlogService.MARK_STATE_NORMAL, null);
 		} else {
 			List<TbBlog> tagBlogs = labelService.getLabelBlogs(tag);
 			List<Integer> blogIds = new ArrayList<Integer>(tagBlogs.size());

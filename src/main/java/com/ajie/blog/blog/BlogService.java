@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.ajie.blog.blog.exception.BlogException;
 import com.ajie.chilli.common.KVpair;
+import com.ajie.chilli.common.KVpairs;
 import com.ajie.dao.pojo.TbBlog;
 import com.ajie.dao.pojo.TbUser;
 
@@ -24,30 +25,33 @@ public interface BlogService {
 	static public final int MARK_STATE_HOT = 1 << 3;
 	/** 置顶 */
 	static public final int MARK_STATE_TOP = 1 << 4;
+	/** 草稿 */
+	static public final int MARK_STATE_DRAFT = 1 << 5;
 
 	/** 公开可见 */
-	static public final int MARK_VISIT_PUBLIC = 1 << 5;
+	static public final int MARK_VISIT_PUBLIC = 1 << 10;
 	/** 仅自己可见 */
-	static public final int MARK_VISIT_SELF = 1 << 6;
+	static public final int MARK_VISIT_SELF = 1 << 11;
 	/** 仅好友可见 暂不支持 */
-	static public final int MARK_VISIT_FRIEND = 1 << 7;
+	static public final int MARK_VISIT_FRIEND = 1 << 12;
 
 	/** 博文状态 -- 正常 */
 	static public final KVpair STATE_NORMAL = KVpair.valueOf("正常", MARK_STATE_NORMAL);
 	/** 博文状态 -- 已删除 */
 	static public final KVpair STATE_DELETE = KVpair.valueOf("已删除", MARK_STATE_DELETE);
 	/** 博文状态 -- 热门 */
-	static public final KVpair STATE_HOT = KVpair
-			.valueOf("热门 ", MARK_STATE_NORMAL | MARK_STATE_HOT);
+	static public final KVpair STATE_HOT = KVpair.valueOf("热门 ", MARK_STATE_HOT);
 	/** 博文状态 -- 置顶 */
-	static public final KVpair STATE_TOP = KVpair.valueOf("置顶", MARK_STATE_NORMAL | MARK_STATE_TOP);
+	static public final KVpair STATE_TOP = KVpair.valueOf("置顶", MARK_STATE_TOP);
+	/** 博文状态 -- 草稿 */
+	static public final KVpair STATE_DRAFT = KVpair.valueOf("草稿", MARK_STATE_DRAFT);
 
-	static public final KVpair VISIT_PUBLIC = KVpair.valueOf("公开", MARK_STATE_NORMAL
-			| MARK_VISIT_PUBLIC);
-	static public final KVpair VISIT_SELF = KVpair.valueOf("仅自己可见", MARK_STATE_NORMAL
-			| MARK_VISIT_SELF);
-	static public final KVpair VISIT_FRIEND = KVpair.valueOf(" 仅好友可见", MARK_STATE_NORMAL
-			| MARK_VISIT_FRIEND);
+	static public final KVpair VISIT_PUBLIC = KVpair.valueOf("公开", MARK_VISIT_PUBLIC);
+	static public final KVpair VISIT_SELF = KVpair.valueOf("仅自己可见", MARK_VISIT_SELF);
+	static public final KVpair VISIT_FRIEND = KVpair.valueOf(" 仅好友可见", MARK_VISIT_FRIEND);
+
+	static public final KVpairs BLOG_MARKS = KVpairs.valueOf(STATE_NORMAL, STATE_DELETE, STATE_HOT,
+			STATE_TOP, STATE_DRAFT, VISIT_PUBLIC, VISIT_SELF, VISIT_FRIEND);
 
 	/** 按照创建时间排序 */
 	public static final Comparator<TbBlog> CREATE_DATE = new Comparator<TbBlog>() {
@@ -120,7 +124,9 @@ public interface BlogService {
 	 * @param user
 	 *            null表示获取所有
 	 * @param state
-	 *            状态，0表示全部
+	 *            状态，传0时自动根据user和operator的传入情况分析可以获取的状态
+	 *            见BlogService.XXXX,支持多个标志查询，使用|即可，如查询热门和置顶：state =
+	 *            STATE_HOT|MARK_STATE_TOP
 	 * @param operator
 	 *            操作者，如果不是自己或管理员或su，则不能查看私有的博客
 	 * @return
