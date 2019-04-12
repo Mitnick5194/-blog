@@ -202,6 +202,6 @@ public interface BlogService {
 	 * @return
 	 * @throws BlogException
 	 */
-	TbBlog updateBlog(TbBlog blog) throws BlogException;
+	TbBlog updateBlog(TbBlog blog, TbUser operator) throws BlogException;
 
 }

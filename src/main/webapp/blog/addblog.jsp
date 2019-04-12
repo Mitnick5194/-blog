@@ -33,7 +33,7 @@
 .input-group input{background: #eee;border: none;width: 80px;border-radius: 3px;padding: 5px; }
 .delLabelBtn{display: inline-block;width: 20px;height: 100%;color: #888;font-size: 22px;margin-right: 3px;text-align: center;cursor: pointer;}
 .submit-btn{cursor:pointer; display: inline-block;width: 120px;padding: 8px 0;text-align: center;background:#349EDF;border-radius: 5px; color:#fff;}
-.hits-frame{width: 80%;}
+.hits-frame{width: 80%;display: none}
 .hits-frame>div{padding:10px;}
 .hits-frame>.hits-title{background:#349EDF;text-align: center;color: #fff; }
 .hits-frame>.hits-content{padding: 25px 15px 0 15px; }
@@ -131,12 +131,13 @@
 			<div class="hitsHide">我知道了</div>	
 		</div>
 	</div>
+    <script>
+      	var serverId = "${serverId}";
+	</script>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/js/jquery-1.9.1.js"></script>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/common/common.js?d=2019"></script>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/js/dark-mode-support.js"></script>
 	 <script src="${ pageContext.request.contextPath }/${serverId }/ckeditor/ckeditor.js"></script>
      <script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/blog/js/addblog.js?d=2019"></script>
-      <script>
-	   </script>
 </body>
 </html>

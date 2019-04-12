@@ -217,6 +217,7 @@ window.addEventListener("error" , function(e){
 	</script>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/plugin/suspend-btn.js"></script>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/js/dark-mode-support.js"></script>
+		<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/js/suspend-btn-instance.js"></script>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/blog/js/blog.js"></script>
 	<script type="text/temp" id="iCommentTemp">
 		<section class="comment-item">

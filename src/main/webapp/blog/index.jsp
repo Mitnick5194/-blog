@@ -184,8 +184,9 @@ window.addEventListener("error" , function(e){
 			logFrame.show();
 		}
 	</script>
-	<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/js/dark-mode-support.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/js/suspend-btn-instance.js"></script>
+	<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/blog/js/index.js?d=20190308"></script>
 	<script type="text/javascript">
 	/*var config = {};

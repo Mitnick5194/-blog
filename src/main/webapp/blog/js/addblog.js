@@ -7,6 +7,7 @@
 	var isMinWidth = winwid < 768; //小屏幕，富文本高度处理一下
 	var preBlog = $("#iPreBlog");
 	var preBlogPage = null;
+	var blogId = null;//文章id
 	$(document).ready(function(){
 		if(isMinWidth){
 			checkHits();
@@ -35,7 +36,15 @@
      } );
      
      $("#iBtn").on("click",function(){
-    	 submit();
+    	 submit(function(data){
+    		 if(data.code == 200){
+				 $.showToast("发布成功",function(){
+    				 location.href = "index.do";
+    			 }) 
+			 }else{
+				 $.showToast(data.msg);
+			 }
+    	 });
      })
      
      $("#iAddLabelBtn").on("click",function(){
@@ -50,29 +59,50 @@
      })
      
      var canClick = true;
-     function submit(){
+     
+     /**
+      * 
+      * @param arg1 操作或回调
+      * @param arg2 回调
+      */
+     function submit(arg1,arg2){
     	 if(!canClick) {
     		 return false;
     	 }
+    	 var callback,op;
+    	 if(typeof arguments[0] === "function"){
+    		 callback = arguments[0];
+    	 }else if(typeof arguments[0] === "string"){
+    		 op = arguments[0];
+    	 }
+    	 if(typeof arguments[1] === "function"){
+    		 callback = arguments[1];
+    	 }
     	 canClick = false;//防止多次点击，提交多次
-    	var datas = getDatas();
-    	 if(!submitVertify(datas.title , datas.content , datas.labels)){
+    	 var datas = getDatas();
+    	 if(!op && !submitVertify(datas.title , datas.content , datas.labels)){
     		 canClick = true;
     		 return false;
+    	 }else{
+    		 if(!datas.content) {
+    			 $.showToast("草稿内容不能为空");
+    			 canClick = true;
+        		 return false;
+    		 }
     	 }
-    	 var loading = $.showloading("正在发布")
+    	 if(op){
+    		 datas.op = "draft";
+    	 }
+    	 if(blogId){
+    		 datas.id = blogId;
+    	 }
+    	 var loading = $.showloading(op ? "正在保存" : "正在发布")
     	 $.ajax({
     		 type: 'post',
-    		 url: 'createblog.do',
+    		 url: 'submitblog.do',
     		 data:datas,
     		 success: function(data){
-    			 if(data == 200){
-    				 $.showToast("发布成功",function(){
-        				 location.href = "index.do";
-        			 }) 
-    			 }else{
-    				 $.showToast(data.msg);
-    			 }
+    			typeof callback === "function" && callback(data);
     		 },
     		 fail: function(e){
     			 $.showToast(e);
@@ -143,7 +173,7 @@
  		}else if(serverId == 'xff'){
  			url = "http://"+host+"ajie/sso/";
  		}else{
- 			url = "http://"+host+"/sso/";
+ 			url = "http://"+host+"sso/";
  		}
  		if("login" == type){
  			url += "login.do?ref="+location.href;
@@ -179,6 +209,18 @@
     	 preBlog.find(".content").html(datas.content);
     	 preBlog.removeClass("hidden");
     	 preBlogPage.show();
+     })
+     
+     $("#iSaveDraft").on("click",function(){
+    	 submit("draft",function(data){
+    		 if(data.code == 200){
+				 $.showToast("保存成功");
+				 blogId = data.data;
+			 }else{
+				 $.showToast(data.msg);
+			 }
+    		 
+    	 });
      })
      
 })()

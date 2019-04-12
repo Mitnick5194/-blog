@@ -373,8 +373,16 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 	}
 
 	@Override
-	public TbBlog updateBlog(TbBlog blog) throws BlogException {
-		mapper.updateByPrimaryKey(blog);
+	public TbBlog updateBlog(TbBlog blog, TbUser operator) throws BlogException {
+		if (null == operator)
+			throw new BlogException("无法更新博客，操作者为空");
+		if (null == blog || blog.getId() == 0)
+			throw new BlogException("无法更新博客，文章不存在");
+		TbBlogExample ex = new TbBlogExample();
+		Criteria criteria = ex.createCriteria();
+		criteria.andIdEqualTo(blog.getId());
+		criteria.andUseridEqualTo(operator.getId());
+		mapper.updateByExample(blog, ex);
 		return blog;
 	}
 

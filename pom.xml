@@ -158,6 +158,21 @@
 					<uriEncoding>utf-8</uriEncoding>
 				</configuration>
 			</plugin>
+			<plugin>
+				<groupId>com.ajie</groupId>
+				<artifactId>custom-maven-plugin</artifactId>
+				<version>1.0.10</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>install</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<serverFile>properties/server.properties</serverFile>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

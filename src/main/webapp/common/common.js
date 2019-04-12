@@ -257,7 +257,7 @@
 		var b = typeof bool ==='boolean' ? bool :  true;
 		if(b) {
 			closer.show();
-		}else {
+		} else {
 			closer.hide();
 		}
 	}
@@ -290,9 +290,9 @@
 		 	}
 		 }
 		}
-		closer.bind("click" , function() {
-			plugin.hide();
-		})
+	closer.bind("click" , function() {
+		plugin.hide();
+	})
 	function center(){ //使居中
 		var height = WIN.height();
 		var width = WIN.width();
@@ -340,8 +340,8 @@
 		 zIndex: 1500,
 		 title: "",//滑出后title显示内容
 	 },options)
-	 var mask = $("<div>").addClass("slide-win-mask").appendTo(BODY);
-	 var dialog = $("<div>").addClass("slide-win-dialog").appendTo(BODY).append(opts.ele).css({"z-index":opts.zIndex});
+	 var mask = $("<div>").addClass("slide-win-mask").appendTo(BODY).addClass("hidden");
+	 var dialog = $("<div>").addClass("slide-win-dialog").appendTo(BODY).append(opts.ele).css({"z-index":opts.zIndex}).addClass("hidden");
 	 var direction = opts.direction;
 	 var id = opts.ele.attr("id");
 	 var anchor = null;
@@ -352,7 +352,15 @@
 	  }
 
 	 (function(){
+	 	var ele = opts.ele;
+	 	if(ele.hasClass("hidden")){
+	 		ele.removeClass("hidden");
+	 	}else{
+	 		opts.ele.show();
+	 	}
 		trans("hide");
+		mask.removeClass("hidden");
+		dialog.removeClass("hidden");
 	 })()
 
 	 /**

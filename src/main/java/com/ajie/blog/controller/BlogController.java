@@ -38,6 +38,7 @@ import com.ajie.chilli.picture.PictureException;
 import com.ajie.chilli.picture.PictureService;
 import com.ajie.chilli.utils.TimeUtil;
 import com.ajie.chilli.utils.Toolkits;
+import com.ajie.chilli.utils.common.StringUtils;
 import com.ajie.dao.pojo.TbBlog;
 import com.ajie.dao.pojo.TbUser;
 import com.ajie.resource.ResourceService;
@@ -221,8 +222,7 @@ public class BlogController {
 		// 小程序请求tag没带过来时，拿到的竟然是带引号的"null"，坑啊
 		List<TbBlog> blogs = null;
 		if (null == tag || "null".equals(tag)) {
-			blogs = blogService.getBlogs(user, BlogService.MARK_STATE_DELETE
-					| BlogService.MARK_STATE_DRAFT | BlogService.MARK_STATE_NORMAL, null);
+			blogs = blogService.getBlogs(user, 0, null);
 		} else {
 			List<TbBlog> tagBlogs = labelService.getLabelBlogs(tag);
 			List<Integer> blogIds = new ArrayList<Integer>(tagBlogs.size());
@@ -239,6 +239,60 @@ public class BlogController {
 			}
 		};
 		return ResponseResult.newResult(ResponseResult.CODE_SUC, trans);
+	}
+
+	/**
+	 * 我的博客，支持jsonp请求
+	 * 
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws IOException
+	 */
+	@ResponseBody
+	@RequestMapping("/myblogs")
+	public Object myblogs(HttpServletRequest request, HttpServletResponse response)
+			throws IOException {
+		TbUser user = userService.getUser(request);
+		String callback = request.getParameter("callback");
+		ResponseResult result = null;
+		if (null == user) {
+			result = ResponseResult.newResult(ResponseResult.CODE_SESSION_INVALID, "会话过期，请重新登录");
+			if (null == callback)
+				return result;
+			String jsonp = ResponseResult.toJsonp(result, "callback");
+			PrintWriter out = response.getWriter();
+			out.write(jsonp);
+			return null;
+		}
+
+		String type = request.getParameter("type");
+		List<TbBlog> blogs = null;
+		if (StringUtils.isEmpty(type)) {
+			int state = BlogService.MARK_STATE_NORMAL;
+			state |= BlogService.MARK_STATE_HOT;
+			state |= BlogService.MARK_STATE_TOP;
+			state |= BlogService.MARK_VISIT_FRIEND;
+			state |= BlogService.MARK_VISIT_PUBLIC;
+			state |= BlogService.MARK_VISIT_SELF;
+			blogs = blogService.getBlogs(user, state, user);
+		} else if (StringUtils.eq("draft", type)) {
+			blogs = blogService.getBlogs(user, BlogService.MARK_STATE_DRAFT, user);
+		}
+		List<BlogVo> trans = new TransList<BlogVo, TbBlog>(blogs) {
+			@Override
+			public BlogVo trans(TbBlog v) {
+				return new BlogVo(v);
+			}
+		};
+		result = ResponseResult.newResult(ResponseResult.CODE_SUC, trans);
+		if (null == callback)
+			return result;
+		String jsonp = ResponseResult.toJsonp(result, "callback");
+		PrintWriter out = response.getWriter();
+		out.write(jsonp);
+		return null;
+
 	}
 
 	/**
@@ -280,7 +334,7 @@ public class BlogController {
 	}
 
 	/**
-	 * 添加一条博客
+	 * 添加一条博客或博客草稿
 	 * 
 	 * @param request
 	 * @param response
@@ -288,8 +342,8 @@ public class BlogController {
 	 * @throws UnsupportedEncodingException
 	 */
 	@ResponseBody
-	@RequestMapping("/createblog")
-	public ResponseResult createblog(HttpServletRequest request, HttpServletResponse response)
+	@RequestMapping("/submitblog")
+	public ResponseResult submitblog(HttpServletRequest request, HttpServletResponse response)
 			throws UnsupportedEncodingException {
 		request.setCharacterEncoding("utf-8");
 		setAjaxContentType(response);
@@ -297,7 +351,12 @@ public class BlogController {
 		if (null == operator) {
 			return ResponseResult.newResult(ResponseResult.CODE_SESSION_INVALID, "会话过期，请重新登录");
 		}
+		boolean isDraft = "draft".equals(request.getParameter("op"));
+		String blogId = request.getParameter("id");
 		String title = request.getParameter("title");
+		if (StringUtils.isEmpty(title)) {
+			title = "无标题";// 保存草稿可能没有标题
+		}
 		String content = request.getParameter("content");
 		String labelstrs = request.getParameter("labels");
 		TbBlog blog = new TbBlog(title, content);
@@ -306,20 +365,68 @@ public class BlogController {
 		blog.setUserheader(operator.getHeader());
 		blog.setUsername(operator.getName());
 		blog.setUsernickname(operator.getNickname());
+		String msg = assertBlog(blog, isDraft);
+		if (null != msg)
+			return ResponseResult.newResult(ResponseResult.CODE_ERR, msg);
 		try {
-			blogService.createBlog(blog);
+			if (isDraft) { // 添加草稿
+				blog.setMark(BlogService.MARK_STATE_DRAFT);
+			}
+			if (null == blogId) {
+				blogService.createBlog(blog);
+			} else {
+				// 发布草稿
+				int id = Integer.valueOf(blogId);
+				blog.setId(id);
+				blogService.updateBlog(blog, operator);
+			}
+
 		} catch (BlogException e) {
 			logger.warn("", e);
-			return ResponseResult.newResult(ResponseResult.CODE_SUC, "无法添加博客");
+			return ResponseResult.newResult(ResponseResult.CODE_ERR,
+					isDraft ? "无法添加草稿【" + e.getMessage() + "】" : "发布失败【" + e.getMessage() + "】");
 		}
 		List<String> list = Arrays.asList(labelstrs.split(LabelService.BLOG_IDS_SEPARATOR));
 		try {
 			labelService.openLabels(blog, list);
 		} catch (BlogException e) {
 			logger.warn("", e);
-			return ResponseResult.newResult(ResponseResult.CODE_ERR, "微博发布成功，标签添加失败");
+			String type = isDraft ? "草稿保存" : "博客发布";
+			return ResponseResult.newResult(ResponseResult.CODE_ERR, type + "成功，标签保存失败");
 		}
-		return ResponseResult.newResult(ResponseResult.CODE_SUC, "发布成功");
+		return ResponseResult.newResult(ResponseResult.CODE_SUC, isDraft ? "保存成功" : "发布成功",
+				blog.getId());
+	}
+
+	/**
+	 * 校验内容合法性
+	 * 
+	 * @param blog
+	 * @param isDraft
+	 *            true保存 草稿箱
+	 * @return
+	 */
+	private String assertBlog(TbBlog blog, boolean isDraft) {
+
+		if (null == blog) {
+			return "无内容";
+		}
+		if (isDraft) {
+			if (StringUtils.isEmpty(blog.getContent())) {
+				return "内容为空";
+			}
+			return null;
+		}
+		if (StringUtils.isEmpty(blog.getTitle())) {
+			return "标题为空";
+		}
+		if (StringUtils.isEmpty(blog.getContent())) {
+			return "内容为空";
+		}
+		if (StringUtils.isEmpty(blog.getLabelstrs())) {
+			return "标签为空";
+		}
+		return null;
 	}
 
 	/**

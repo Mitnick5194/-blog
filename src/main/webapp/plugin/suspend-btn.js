@@ -292,7 +292,7 @@
 			//不管传多少个 ，都是6个
 			for(let i=0;i<6;i++){
 				var prop = props[i];
-				var item = $("<div>").addClass("operating-item operatingTap").css({
+				/*var item = $("<div>").addClass("operating-item operatingTap").css({
 					width: itemWidth,
 					height: itemHeight
 				}).css(prop.box).appendTo(panel);
@@ -301,9 +301,26 @@
 					continue;
 				}
 				var img = $("<img>").addClass("operating-icon").attr("src",icon.url).appendTo(item).css(prop.img);
-				var text = $("<div>").addClass("operating-text").addClass(prop.textClass).html(icon.text).appendTo(item);	
-				handleCallback(img,text,icon.callback);
+				var text = $("<div>").addClass("operating-text").addClass(prop.textClass).html(icon.text).appendTo(item);	*/
+				var icon = opts.icons[i];
+				var prop = props[i];
+				var item = drawItem(icon,prop);
+				item.appendTo(panel);
 			}
+		}
+		
+		function drawItem(icon,prop){
+			var item = $("<div>").addClass("operating-item operatingTap").css({
+				width: itemWidth,
+				height: itemHeight
+			}).css(prop.box);
+			if(!icon){
+				return item;
+			}
+			var img = $("<img>").addClass("operating-icon").attr("src",icon.url).appendTo(item).css(prop.img);
+			var text = $("<div>").addClass("operating-text").addClass(prop.textClass).html(icon.text).appendTo(item);
+			handleCallback(img,text,icon.callback);
+			return item;
 		}
 
 		/**重新设置icons*/
@@ -315,8 +332,19 @@
 		/**改变第idx个icon*/
 		function setIcon(icon,idx){
 			var icons = opts.icons;
-			icons[idx] = icon;
-			setIcons(icons);
+			icons[idx] = icon;//更新全局控制
+			var item = panel.find(".operating-item").eq(idx);
+			if(item){
+				//一定要用remove，不能用empty，remove会把事件一并移除，而empty则不会，一定程度上empty会造成内存泄露
+				item.remove();
+			}
+			var item = drawItem(icon,getProps()[idx]);
+			if(idx == 0){
+				panel.find(".operating-item").eq(1).before(item);
+			}else{
+				panel.find(".operating-item").eq(idx-1).after(item);
+			}
+			//setIcons(icons);
 		}
 
 		function handleCallback(img,text,callback){
