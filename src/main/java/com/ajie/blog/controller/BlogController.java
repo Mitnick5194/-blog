@@ -327,6 +327,11 @@ public class BlogController {
 				return ResponseResult.newResult(ResponseResult.CODE_ERR, "文章不存在");
 			}
 			BlogVo vo = new BlogVo(blog);
+			if (null != operator) {
+				if (blog.getUserid().equals(operator.getId())) {
+					vo.setSelf(true);
+				}
+			}
 			return ResponseResult.newResult(ResponseResult.CODE_SUC, vo);
 		} catch (BlogException e) {
 			return ResponseResult.newResult(ResponseResult.CODE_ERR, e.getMessage());
@@ -468,6 +473,22 @@ public class BlogController {
 			logger.warn("删除博文失败", e);
 			return ResponseResult.newResult(ResponseResult.CODE_ERR, e.getMessage());
 		}
+	}
+
+	@ResponseBody
+	@RequestMapping("getblogcount")
+	public ResponseResult getblogcount(HttpServletRequest request, HttpServletResponse response)
+			throws IOException {
+		TbUser operator = userService.getUser(request);
+		int userId = Toolkits.toInt(request.getParameter("id"), 0);
+		int count = blogService.getBlogCount(userId, operator);
+		String callback = request.getParameter("callback");
+		if (null == callback)
+			return ResponseResult.success(count);
+		String jsonp = ResponseResult.toJsonp(ResponseResult.success(count), "callback");
+		PrintWriter out = response.getWriter();
+		out.write(jsonp);
+		return null;
 	}
 
 	/**

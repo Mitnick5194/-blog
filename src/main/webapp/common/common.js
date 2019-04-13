@@ -211,6 +211,8 @@
  	var content = $(ele);
  	var contentWidth = content.width();
  	var contentHeight = content.height();
+ 	//隐藏content,不然页面显示出来的时间太长，不雅观
+ 	content.hide();
  	var win = $(window);
  	var plugin = this;
  	var mask = $("<div/>").addClass("window-plugin-background").appendTo(BODY);
@@ -220,7 +222,7 @@
  	content.appendTo(dialog).css({
  		width: contentWidth,
  		contentHeight:contentHeight
- 	});
+ 	}).show();//因为上面隐藏了
 	var clickbackhide = true; //点击背景关闭 默认关闭
 	var callbackafterclose; //关闭后回调
 	this.setCallbackafterclose = function (callbackafterclose) {
@@ -389,6 +391,9 @@
 	 	//后退
 	 	window.history.pushState(null, null, "#"+anchor);
 	 	mask.removeClass("slide-win-mask-hide").addClass("slide-win-mask-show").show();
+	 	//禁止页面滚动时下面的也跟着滚动
+ 		BODY.addClass("disable-scroll");
+ 		$("html").addClass("disable-scroll")
 	 	trans("show");
 	 	var oldTitle = DOC[0].title;
 	 	opts.oldTitle = oldTitle;
@@ -409,6 +414,9 @@
 
 	 function hide(callback){
 	 	mask.removeClass("slide-win-mask-show").addClass("slide-win-mask-hide").show();
+		//解除禁止滑动
+ 		BODY.removeClass("disable-scroll");
+ 		$("html").removeClass("disable-scroll")
 	 	trans("hide");
 	 	DOC[0].title = opts.oldTitle;
 	 	var timing = setTimeout(function(){
@@ -424,7 +432,11 @@
 	 this.hide = function(callback){
 	 	hide(callback);
 	 }
- }
+  }
+
+  function FunnelLoading(){
+  	
+  }
 
  /**
   * base64编码

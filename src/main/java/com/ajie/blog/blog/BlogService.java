@@ -204,4 +204,15 @@ public interface BlogService {
 	 */
 	TbBlog updateBlog(TbBlog blog, TbUser operator) throws BlogException;
 
+	/**
+	 * 获取博客数
+	 * 
+	 * @param userId
+	 *            null时为全部
+	 * @param operator
+	 *            非管理员不能获取全部
+	 * @return
+	 */
+	int getBlogCount(Integer userId, TbUser operator);
+
 }

@@ -21,19 +21,20 @@
 .header-navi>.user-header>img{width: 25px; height: 25px;border-radius: 50%;}
 .login-btn{color: blue}.main>.editor-area{width: 100%;}
 .form>input[name=title]{width: 94%;height: 40px;line-height: 40px;background: #eee;margin-bottom: 5px;padding: 0 10px;border: none;font-size: 16px;}
-.labels{height: 30px;line-height: 30px;align-items: center;padding:10px 0;}
+.labels{align-items: center;margin:15px 0;flex-wrap:wrap;}
 .add-label{position: relative;color: #349EDF;cursor: pointer;}
 /* .add-label:before{content:'';position: absolute;width: 20px;height: 20px;border-radius: 3px;background:#349EDF;color:#fff;left: -25px;top: 5px;} */
 .add-label>div{display: inline-block;}
 .add-label-btn{position: absolute;left: 0;width: 20px;height: 20px;background:#349EDF;border-radius: 3px;top: 5px; }
 .add-label-btn>span:nth-child(1){position: absolute;top:9px;height: 2px;background: #fff;width:16px;left: 2px;}
 .add-label-btn>span:nth-child(2){position: absolute;width: 2px;background: #fff;left:9px;top: 2px;height:16px;}
-.add-label-hits{margin-left: 25px;}
-.input-group{display: flex;}
+.add-label-hits{margin-left: 25px;height: 30px;line-height: 30px;}
+.input-group{display: flex;flex-wrap: wrap;}
+.input-group>section{margin-right: 5px;}
 .input-group input{background: #eee;border: none;width: 80px;border-radius: 3px;padding: 5px; }
 .delLabelBtn{display: inline-block;width: 20px;height: 100%;color: #888;font-size: 22px;margin-right: 3px;text-align: center;cursor: pointer;}
 .submit-btn{cursor:pointer; display: inline-block;width: 120px;padding: 8px 0;text-align: center;background:#349EDF;border-radius: 5px; color:#fff;}
-.hits-frame{width: 80%;display: none}
+.hits-frame{width: 80%}
 .hits-frame>div{padding:10px;}
 .hits-frame>.hits-title{background:#349EDF;text-align: center;color: #fff; }
 .hits-frame>.hits-content{padding: 25px 15px 0 15px; }
@@ -48,7 +49,7 @@
 .tags>span{display: inline-block;}
 .tags span+span{border:1px solid #eee; border-radius:5px;margin-right: 5px;padding: 1px 10px}
 .btn-col{display: flex;padding: 10px 0;}
-.btn-col>div{width: 50%;text-align: center;}
+.btn-col>div{width: 50%;text-align: center;max-width: 200px;}
 .btn-col div:nth-child(1){margin-right: 15px;}
 .btn-col div:nth-child(12){margin-left: 15px;}
 /* 平板 */
@@ -133,6 +134,10 @@
 	</div>
     <script>
       	var serverId = "${serverId}";
+      	var blogId = "${id}";
+      	if(!blogId || blogId.length==0){
+      		blogId = null;
+      	}
 	</script>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/js/jquery-1.9.1.js"></script>
 	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/common/common.js?d=2019"></script>

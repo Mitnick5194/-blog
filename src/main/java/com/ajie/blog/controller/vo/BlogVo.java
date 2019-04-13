@@ -29,6 +29,8 @@ public class BlogVo {
 	private int readNum;
 	private int commentNum;
 	private String labels;
+	/** 是否为查看者自己的文章，如果是，则可以编辑 */
+	private boolean isSelf;
 
 	public BlogVo() {
 
@@ -178,5 +180,13 @@ public class BlogVo {
 
 	public void setUserName(String userName) {
 		this.userName = userName;
+	}
+
+	public void setSelf(boolean isSelf) {
+		this.isSelf = isSelf;
+	}
+
+	public boolean isSelf() {
+		return isSelf;
 	}
 }

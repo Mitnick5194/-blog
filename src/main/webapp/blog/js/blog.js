@@ -11,7 +11,13 @@
 		$.toggleDarkMode($.isDarkMode());
 	})
 	getblogbyid(id,function(data){
-		main.find(".title").html(data.title);
+		var title = "<span class='title-text'>"+data.title+"</span>";
+		var edit = "";
+		if(data.self){
+			var id = data.id;
+			edit = "<span class='edit' data-id="+id+">编辑</span>"
+		}
+		main.find(".title").html(title+edit);
 		var userList = "<span>"+data.createDate+" | </span><span class='user' data-id="+data.userId+">"+data.user+" | </span><span>阅读数 "+data.readNum+"</span>";
 		main.find(".user-list").html(userList);
 		var tagsBlock = main.find(".tags");
@@ -227,6 +233,11 @@
 		e.stopPropagation(); //禁止冒泡
 		var _this = $(this);
 		gotoUserPage(_this);
+	})
+	
+	$("#iBlogs").on("click",".edit",function(){
+		var id = $(this).attr("data-id");
+		location.href = "addblog.do?id="+id;
 	})
 	
 	function gotoUserPage(ele){

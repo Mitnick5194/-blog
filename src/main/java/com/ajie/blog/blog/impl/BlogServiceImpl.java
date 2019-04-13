@@ -485,4 +485,15 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 		}
 		logger.info("更新blog的评论数和阅读数");
 	}
+
+	@Override
+	public int getBlogCount(Integer userId, TbUser opeator) {
+		if (null == userId || userId == 0) {
+			if (!isAdmin(opeator)) {
+				return 0;
+			}
+			return mapper.getBlogCount();
+		}
+		return mapper.getUserBlogCount(userId);
+	}
 }

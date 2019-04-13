@@ -7,7 +7,6 @@
 	var isMinWidth = winwid < 768; //小屏幕，富文本高度处理一下
 	var preBlog = $("#iPreBlog");
 	var preBlogPage = null;
-	var blogId = null;//文章id
 	$(document).ready(function(){
 		if(isMinWidth){
 			checkHits();
@@ -16,7 +15,42 @@
 			preBlog.css({width: "800px"})
 			preBlogPage = preBlog.getWindow();
 		}
+		loadblog(blogId);
 	})
+	
+	function loadblog(id){
+		if(!id)
+			return;
+		$.ajax({
+			type: "post",
+			data: {id:blogId},
+			url: "getblogbyid.do",
+			success:function(data){
+				if(data.code != 200){
+					$.showToast(data.msg);
+					return;
+				}
+				var _data = data.data;
+				var title = _data.title;
+				var content = _data.content;
+				var tags = _data.labels;
+				if(title && title != "无标题"){
+					 form.find("input[name=title]").val(title);
+				}
+				CKEDITOR.instances.editor.setData(content);
+				if(tags){
+					var _tags = tags.split(",");
+					for(let i=0;i<_tags.length;i++){
+						createTag(function(tag){
+							tag.find("input").val(_tags[i]);
+						})
+					}
+				}
+			}
+		})
+		
+	}
+	
 	function checkHits(){
 		var control = $.Storage.get(HITS_CONTROL);
 		if(!$.isEmptyObject(control) && control){
@@ -29,11 +63,11 @@
 	var labelInputGruop = $("#iInputGruop");
 	var form = $("#iForm");
 	var height = isMinWidth ? 150 : 600;
-	  CKEDITOR.replace( 'editor' , {
-     	 filebrowserImageUploadUrl: "imgupload.do",
-     	 language : 'zh-cn',
-     	 height: height
-     } );
+	CKEDITOR.replace( 'editor' , {
+ 	 filebrowserImageUploadUrl: "imgupload.do",
+ 	 language : 'zh-cn',
+ 	 height: height
+	});
      
      $("#iBtn").on("click",function(){
     	 submit(function(data){
@@ -48,11 +82,18 @@
      })
      
      $("#iAddLabelBtn").on("click",function(){
-    	 var input = $(labelTemp);
-    	 labelInputGruop.append(input).find("input").attr("focus",false);
     	 //需要append到页面之后再聚焦，否则无效
-    	 input.find("input").focus();
+    	 createTag(function(tag){
+    		 tag.find("input").focus();
+    	 })
+    	
      })
+     
+     function createTag(callback){
+    	 var tag = $(labelTemp);
+    	 labelInputGruop.append(tag).find("input").attr("focus",false);
+    	 typeof callback === "function" && callback(tag);
+     }
      
      labelInputGruop.on("click" , ".delLabelBtn" , function(){
     	 $(this).parent("section").remove();
@@ -219,7 +260,6 @@
 			 }else{
 				 $.showToast(data.msg);
 			 }
-    		 
     	 });
      })
      
