@@ -34,7 +34,7 @@
 .input-group input{background: #eee;border: none;width: 80px;border-radius: 3px;padding: 5px; }
 .delLabelBtn{display: inline-block;width: 20px;height: 100%;color: #888;font-size: 22px;margin-right: 3px;text-align: center;cursor: pointer;}
 .submit-btn{cursor:pointer; display: inline-block;width: 120px;padding: 8px 0;text-align: center;background:#349EDF;border-radius: 5px; color:#fff;}
-.hits-frame{width: 80%}
+.hits-frame{width: 80%;display: none;}
 .hits-frame>div{padding:10px;}
 .hits-frame>.hits-title{background:#349EDF;text-align: center;color: #fff; }
 .hits-frame>.hits-content{padding: 25px 15px 0 15px; }

@@ -46,7 +46,7 @@ html, body {overflow: hidden;overflow-y: auto;background-color: #f5f6f7;}
 .create-date{padding: 0 5px;color: #888;}
 
 /* 登录弹窗 */
-.login-frame{background: #fff;padding: 20px;width: 250px;height:230px;}
+.login-frame{background: #fff;padding: 20px;width: 250px;height:230px;display: none;}
 .mobile-login-dv{overflow: hidden;max-width: 400px;}
 .key-dv,.passwd-dv,.vertify-dv{padding: 0 10px; margin:20px 0; height: 45px;line-height: 45px;border: 1px solid #eee;border-radius: 3px;}
 .key-dv>input,.passwd-dv>input{border: none}
@@ -63,7 +63,7 @@ html, body {overflow: hidden;overflow-y: auto;background-color: #f5f6f7;}
 .vertify-dv>input{width: 40%; border: 1px solid #eee;border-radius: 3px;height: 100%;padding: 0 5px;}
 .vertify-dv>div{width: 60%;text-align: right;height: 100%;}
 .vertify-image>img{border : 1px solid #888;height: 40px;width: 80px}
-.log-frame{width: 85%;min-height: 200px;}
+.log-frame{width: 85%;min-height: 200px;display: none;}
 .log-nav{padding: 10px;background: #337ab7;display: flex;white-space: nowrap;color: #fff;}
 .log-nav div:nth-child(1){width: 100%}
 .system-info{padding: 10px;border: 1px solid #eee;font-size:12px;}

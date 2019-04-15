@@ -39,7 +39,7 @@ div {-webkit-tab-highlight-color: rgba(0,0,0,0); }
 .list-right{text-align: right;}
 .list-right div:nth-child(1){width:100%;border-right: 1px solid #888;padding-right: 10px;}
 .list-right>div{text-align: right;}
-.log-frame{width: 85%;min-height: 200px;word-wrap:break-word}
+.log-frame{width: 85%;min-height: 200px;word-wrap:break-word;display: none;}
 .log-nav{padding: 10px;background: #337ab7;display: flex;white-space: nowrap;color: #fff;}
 .log-nav div:nth-child(1){width: 100%}
 .system-info{padding: 10px;border: 1px solid #eee;font-size:12px;}

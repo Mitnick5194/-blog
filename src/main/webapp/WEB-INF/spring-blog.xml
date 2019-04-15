@@ -27,13 +27,14 @@
 				<value>*addblog*</value>
 			</list>
 		</property>
+		<!-- ssoHost用于跳转到登录页面，线上要使用真正访问sso系统的域名链接，不能使用localhost之类的，因为经过代理之后，系统根本没法知道你真正的域名或访问链接 -->
 		<property name="ssoHost" value="${sso-host}" />
 		<property name="path" value="${access-record-path}" />
 	</bean>
 
 	<bean id="userService" name="userService"
 		class="com.ajie.sso.user.impl.RemoteUserServiceImpl">
-		<constructor-arg index="0" value="${sso-host}" />
+		<constructor-arg index="0" value="${sso-host-native}" />
 	</bean>
 
 	<context:component-scan base-package="com.ajie.blog.blog" />
