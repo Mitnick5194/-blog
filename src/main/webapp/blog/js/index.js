@@ -18,7 +18,7 @@
 	loadblogs();
 	function loadblogs(tag) {
 		var loading = $.showloading("加载中")
-		$.ajax({
+		var aj = $.ajax({
 			type: 'post',
 			data:{
 				tag: tag
@@ -54,6 +54,7 @@
 			},
 			complete: function(){
 				//在文档加载时已经判断了是不是夜间模式，但是异步加载的节点比较慢，所以需要手动再判断一下是不是夜间
+				console.log("内部complete");
 				if($.isDarkMode()){
 					$.toggleDarkMode($.isDarkMode())
 				}

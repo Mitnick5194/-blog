@@ -92,7 +92,7 @@ public class LabelServiceImpl implements LabelService {
 					}
 				}
 				if (has) {
-					// 该标签还没有该博客了
+					// 该标签已经有了该博客了
 					continue;
 				}
 				label.setBlogids(blogids + BLOG_IDS_SEPARATOR + blog.getId());
@@ -107,7 +107,7 @@ public class LabelServiceImpl implements LabelService {
 					try {
 						redis.hset(REDIS_PREFIX, lab, label);
 					} catch (RedisException e) {
-						logger.info("label尝试放入缓存失败" + lab, e);
+						logger.warn("label尝试放入缓存失败" + lab, e);
 					}
 				}
 			}

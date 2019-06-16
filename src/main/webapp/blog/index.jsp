@@ -43,7 +43,9 @@ window.addEventListener("error" , function(e){
 			<div class="user-header">
 				<c:choose>
 					<c:when test="${not empty userid }">
-						<img  class="user" data-id="${userid }" data-type="userinfo"  src="${userheader }" />
+						<div class="user-info user"  data-id="${userid }" data-type="userinfo" >
+							<div class="user-name">${username }</div><img  class="user-header-img" src="${userheader }" />
+						</div>
 					</c:when>
 					<c:otherwise>
 						<div class="login-btn user" data-type="login" data-uri="sso/login.do">登录/注册</div>

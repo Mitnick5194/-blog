@@ -30,6 +30,15 @@
         //是否在微信浏览器环境中
         weixin: userAgent.indexOf("micromessenger") > -1
     };
+
+    /**过滤空格*/
+    var MATCH_TRIM = /(^\s*)|(\s*$)/g;
+     //手机号匹配规则
+    var MATCH_PHONE = /^[+]?\d{8,}$/g;
+    //邮箱匹配规则
+    var MATCH_MAIL = /^([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|\_|\.]?)*[a-zA-Z0-9]+\.[a-zA-Z]{2,3}$/;
+    //过滤特殊字符正则表达式
+    var REG_SYMB = new RegExp("[`~!@＠%Y#$^&*()=|{}':;',\\[\\].<>/?~！#￥¥……&*（）&;—|{}【】‘；：”“'。，、？]");
     var base64EncodeChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     var base64DecodeChars = new Array(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1, -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1);
 	function showmsg(msg,delay,callback){
@@ -349,11 +358,17 @@
 		 direction: "right", //方向，right从右边滑出，left从从边滑出,top从上面滑下，bottom从底部
 		 callback: null,//滑出后回调
 		 hidecallback: null,//收起后回调
-		 zIndex: 1500,
+		 zIndex: -1,//-1表示不设置，由css控制
 		 title: "",//滑出后title显示内容
 	 },options)
-	 var mask = $("<div>").addClass("slide-win-mask").appendTo(BODY).addClass("hidden");
-	 var dialog = $("<div>").addClass("slide-win-dialog").appendTo(BODY).append(opts.ele).css({"z-index":opts.zIndex}).addClass("hidden");
+	 var ele = opts.ele;
+	 ele.hide();//如果页面没隐藏，先隐藏，否则加载慢时会显示出来
+	 var mask = $("<div>").addClass("slide-win-mask");
+	 var dialog = $("<div>").addClass("slide-win-dialog").append(ele);
+	 ele.show();//上面隐藏了
+	 if(opts.zIndex >=0 ){
+	 	dialog.css({"z-index":opts.zIndex})
+	 }
 	 var direction = opts.direction;
 	 var id = opts.ele.attr("id");
 	 var anchor = null;
@@ -363,17 +378,7 @@
 		anchor = new Date().getTime();
 	  }
 
-	 (function(){
-	 	var ele = opts.ele;
-	 	if(ele.hasClass("hidden")){
-	 		ele.removeClass("hidden");
-	 	}else{
-	 		opts.ele.show();
-	 	}
-		trans("hide");
-		mask.removeClass("hidden");
-		dialog.removeClass("hidden");
-	 })()
+	  trans("hide");
 
 	 /**
 	  *
@@ -414,6 +419,8 @@
 	 	var timing = setTimeout(function(){
 	 		typeof callback === "function" && callback() || typeof opts.callback === "function" && opts.callback();
 	 		mask.hide();
+	 		//删除transform，防止绝对定位失效（transform会使定位失效，具体原因可百度）；或者可改成使用动画
+	 		dialog.css("transform","");
 	 		clearTimeout(timing);
 	 	},timeout);
 	 }
@@ -442,6 +449,8 @@
 	 this.hide = function(callback){
 	 	hide(callback);
 	 }
+	 mask.appendTo(BODY);
+	 dialog.appendTo(BODY);
   }
 
   function FunnelLoading(){
@@ -597,6 +606,7 @@
 	            }
 	            return EMPTY;
 	        },
+
 	        /**
 	         * 移除cookie
 	         * 例如：$.Cookie.remove("key","path=/");
@@ -691,7 +701,28 @@
 		/**计算字符串的hash值*/
 		hash: function(str){
 			return hash(str);
-		}
+		},
+
+
+		
+		/**str是否符合手机号码格式*/
+		isMobile: function (str) {
+			str=$.trim(str);
+			return str && str.length == 11 && !!str.match(MATCH_PHONE);
+		},
+
+		/*
+		 * 判断字串是否为邮箱
+		 * str:string
+		 * return 时手机号返回true，否则返回false
+		 */
+		isMail: function (str) {
+			return !!$.trim(str).match(MATCH_MAIL);
+		},
+		  /**字符串中是否包含特殊字符*/
+		 hasSymbol: function (str) {
+			return !!$.trim(str).match(REG_SYMB);
+		},
 	})
 	
 	$.extend($.fn , {
@@ -702,9 +733,6 @@
 				var _this = $(this);
 				options.ele = _this;
 				return new SlideWindow(options)
-			}
+			},
 	})
-
-
-
 })()

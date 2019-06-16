@@ -16,7 +16,7 @@
 .window-plugin-background{z-index: 1500; position: fixed;top: 0;left: 0;bottom: 0;right: 0;width: 100%;height: 100%;background: #000000;opacity: .3;filter: alpha(opacity=30); /*IE浏览器*/;display: none;}
 .modal-background-show{animation: modal_background_show .2s  ease-in-out;}
 
-.window-plugin-dialog{position: fixed;z-index: 1501;display: none;background-color: #ffffff;}
+.window-plugin-dialog{position: fixed;z-index: 1501;display: none;background-color: #ffffff;overflow: scroll;}
 .window-plugin-closer{position: absolute;width:36px;height: 36px;top: 15px;right: 15px;cursor: pointer;background-image: url('http://www.ajie18.top/images/closer.png');background-position: center center;background-repeat: no-repeat;}
 
 /*弹窗结束*/

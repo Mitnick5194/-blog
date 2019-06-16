@@ -41,7 +41,7 @@
 .hit-btn{text-align: center;}
 .hit-btn>div{width:50%;overflow: hidden;text-overflow:ellipsis;white-space: nowrap;padding: 5px 0}
 .hit-btn div:nth-child(1){color: #349EDF;border-right:1px solid #888;width:50%;}
-.center-main {padding: 20px;background: #fff;border-bottom:1px solid #eee;overflow: scroll;}
+.center-main {padding: 20px;background: #fff;border-bottom:1px solid #eee;}
 .center-main>.title{font-size: 22px;font-weight: bold;}
 .center-main>section{padding: 5px 0;}
 .user-list>span{display: inline-block;padding: 0 5px;}

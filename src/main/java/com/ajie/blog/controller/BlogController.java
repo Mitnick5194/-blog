@@ -31,6 +31,7 @@ import com.ajie.blog.controller.vo.BlogVo;
 import com.ajie.blog.label.LabelService;
 import com.ajie.blog.label.vo.LabelVo;
 import com.ajie.chilli.cache.redis.RedisClient;
+import com.ajie.chilli.collection.SwitchUnmodifiableList;
 import com.ajie.chilli.collection.utils.TransList;
 import com.ajie.chilli.common.ResponseResult;
 import com.ajie.chilli.picture.Picture;
@@ -43,6 +44,7 @@ import com.ajie.dao.pojo.TbBlog;
 import com.ajie.dao.pojo.TbUser;
 import com.ajie.resource.ResourceService;
 import com.ajie.sso.user.UserService;
+import com.ajie.web.XssDefenseRequest;
 
 /**
  * 博客控制器
@@ -53,6 +55,8 @@ import com.ajie.sso.user.UserService;
 @Controller
 public class BlogController {
 	public Logger logger = LoggerFactory.getLogger(BlogController.class);
+	/** 博客内容标签黑名单 */
+	private static final List<String> CONTENT_BLACK_ELE = SwitchUnmodifiableList.valueOf("script");
 	private static String prefix = "blog/";
 	@Resource
 	private BlogService blogService;
@@ -74,7 +78,7 @@ public class BlogController {
 	private String admin;
 
 	/**
-	 * 关闭服务器
+	 * 优雅的方式关闭服务器
 	 * 
 	 * @param request
 	 */
@@ -107,7 +111,11 @@ public class BlogController {
 	public String index(HttpServletRequest request, HttpServletResponse response) {
 		TbUser user = userService.getUser(request);
 		if (null != user) {
-			request.setAttribute("username", user.getName());
+			if (null != user.getNickname()) {
+				request.setAttribute("username", user.getNickname());
+			} else {
+				request.setAttribute("username", user.getName());
+			}
 			request.setAttribute("userheader", user.getHeader());
 			request.setAttribute("userid", user.getId());
 		}
@@ -125,6 +133,12 @@ public class BlogController {
 		if (null == config) {
 			request.setAttribute("config", "");
 		}*/
+		/*List<String> list = new ArrayList<String>();
+		list.add("div");
+		request = XssDefenseRequest
+				.toXssDefenseRequest(request, XssDefenseRequest.MODE_WHITE, list);
+		String parameter = request.getParameter("xss");
+		System.out.println(parameter);*/
 		return prefix + "index";
 	}
 
@@ -162,6 +176,9 @@ public class BlogController {
 		if (null == config) {
 			request.setAttribute("config", "");
 		}*/
+		response.addHeader("Access-Control-Allow-Origin", "http://localhost:8081");
+		response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT");
+		response.addHeader("Access-Control-Allow-Headers", "X-Custom-Header");
 		request.setAttribute("id", id);
 		return prefix + "blog";
 	}
@@ -256,7 +273,8 @@ public class BlogController {
 		TbUser user = userService.getUser(request);
 		String callback = request.getParameter("callback");
 		ResponseResult result = null;
-		if (null == user) {
+		/* 别人也能访问你的主页
+		 if (null == user) {
 			result = ResponseResult.newResult(ResponseResult.CODE_SESSION_INVALID, "会话过期，请重新登录");
 			if (null == callback)
 				return result;
@@ -264,7 +282,7 @@ public class BlogController {
 			PrintWriter out = response.getWriter();
 			out.write(jsonp);
 			return null;
-		}
+		}*/
 
 		String type = request.getParameter("type");
 		List<TbBlog> blogs = null;
@@ -276,7 +294,7 @@ public class BlogController {
 			state |= BlogService.MARK_VISIT_PUBLIC;
 			state |= BlogService.MARK_VISIT_SELF;
 			blogs = blogService.getBlogs(user, state, user);
-		} else if (StringUtils.eq("draft", type)) {
+		} else if (StringUtils.eq("draft", type)) { // 草稿
 			blogs = blogService.getBlogs(user, BlogService.MARK_STATE_DRAFT, user);
 		}
 		List<BlogVo> trans = new TransList<BlogVo, TbBlog>(blogs) {
@@ -356,6 +374,8 @@ public class BlogController {
 		if (null == operator) {
 			return ResponseResult.newResult(ResponseResult.CODE_SESSION_INVALID, "会话过期，请重新登录");
 		}
+		request = XssDefenseRequest.toXssDefenseRequest(request, XssDefenseRequest.MODE_BLACK,
+				CONTENT_BLACK_ELE);
 		boolean isDraft = "draft".equals(request.getParameter("op"));
 		String blogId = request.getParameter("id");
 		String title = request.getParameter("title");
@@ -461,18 +481,29 @@ public class BlogController {
 
 	@ResponseBody
 	@RequestMapping("deleteblog")
-	public ResponseResult deleteblog(HttpServletRequest request, HttpServletResponse response) {
+	public Object deleteblog(HttpServletRequest request, HttpServletResponse response)
+			throws IOException {
 		TbUser operator = userService.getUser(request);
 		int id = Toolkits.toInt(request.getParameter("id"), 0);
+		String callback = request.getParameter("callback");
 		TbBlog blog = new TbBlog();
 		blog.setId(id);
+		ResponseResult result = null;
 		try {
 			blogService.deleteBlog(blog, operator);
-			return ResponseResult.newResult(ResponseResult.CODE_SUC, "删除成功");
+			result = ResponseResult.success("删除成功");
+
 		} catch (BlogException e) {
 			logger.warn("删除博文失败", e);
-			return ResponseResult.newResult(ResponseResult.CODE_ERR, e.getMessage());
+			result = ResponseResult.fail(e.getMessage());
 		}
+		if (null == callback) {
+			return result;
+		}
+		String jsonp = ResponseResult.toJsonp(result, "callback");
+		PrintWriter out = response.getWriter();
+		out.write(jsonp);
+		return null;
 	}
 
 	@ResponseBody

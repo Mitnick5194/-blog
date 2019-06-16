@@ -14,6 +14,7 @@ import com.ajie.blog.blog.BlogService;
 import com.ajie.blog.blog.RedisBlog;
 import com.ajie.blog.blog.RedisBlog.RedisBlogVo;
 import com.ajie.blog.blog.exception.BlogException;
+import com.ajie.blog.comment.CommentException;
 import com.ajie.blog.comment.CommentService;
 import com.ajie.chilli.cache.redis.RedisClient;
 import com.ajie.chilli.cache.redis.RedisException;
@@ -338,15 +339,14 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 			throw new BlogException("删除异常，请稍后再试");
 		if (null == operator)
 			throw new BlogException("删除失败，操作用户为空");
-		/*// 防数据被篡改
-		// 上面的判断通过了仍不能说明blog的拥有者就是operator，如果在传输过程中改变了blog的id，但是userid没有改变，就会出现删除别的博客
-		blog = mapper.selectByPrimaryKey(blog.getId());
-		if (blog.getUserid() != operator.getId())
-			throw new BlogException("删除失败，不能删除非自己的博客");
-		blog.setMark(MARK_STATE_DELETE);
-		mapper.updateByPrimaryKey(blog);*/
 		mapper.updateBlogMark(blog.getId(), operator.getId(), MARK_STATE_DELETE);
 		logger.info("用户" + operator.getId() + " 删除了博客:" + blog.getId());
+		// 删除博客对应的评论
+		try {
+			commentService.deleteAllComment(blog, operator);
+		} catch (CommentException e) {
+			logger.error("删除博客成功，删除博客对应的评论失败", e);
+		}
 	}
 
 	@Override
@@ -355,19 +355,6 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 			throw new BlogException("删除异常，请稍后再试");
 		if (user.getId() != operator.getId() || !isAdmin(operator))
 			throw new BlogException("删除失败，不能删除非自己的博客");
-		/*TbBlogExample ex = new TbBlogExample();
-		Criteria criteria = ex.createCriteria();
-		criteria.andUseridEqualTo(user.getId());
-		List<TbBlog> blogs = mapper.selectByExample(ex);
-		for (TbBlog blog : blogs) {
-			if (blog.getUserid() != operator.getId()) {
-				logger.error("批量删除过程中，发现有博客拥有者和操作者不匹配，跳过该操作,blog.user" + blog.getUserid()
-						+ "operator:" + operator.getId());
-				continue;
-			}
-			blog.setMark(MARK_STATE_DELETE);
-			mapper.updateByPrimaryKey(blog);
-		}*/
 		mapper.updateBlogsMark(operator.getId(), MARK_STATE_DELETE);
 		logger.info("用户" + operator.getId() + " 删除了所有的博客");
 	}

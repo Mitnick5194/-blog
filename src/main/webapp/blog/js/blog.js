@@ -12,12 +12,13 @@
 	})
 	getblogbyid(id,function(data){
 		var title = "<span class='title-text'>"+data.title+"</span>";
-		var edit = "";
+		var edit = "",deleteBtn="";
 		if(data.self){
 			var id = data.id;
 			edit = "<span class='edit' data-id="+id+">编辑</span>"
+			deleteBtn = "<span class='delete' data-id="+id+">删除</span>"
 		}
-		main.find(".title").html(title+edit);
+		main.find(".title").html(title+edit+deleteBtn);
 		var userList = "<span>"+data.createDate+" | </span><span class='user' data-id="+data.userId+">"+data.user+" | </span><span>阅读数 "+data.readNum+"</span>";
 		main.find(".user-list").html(userList);
 		var tagsBlock = main.find(".tags");
@@ -193,9 +194,9 @@
 		}
 		$.ajax({
 		    url: url,
-		    dataType: 'JSONP',
-		    jsonpCallback: 'callback',//success后会进入这个函数，如果不声明，也不会报错，直接在success里处理也行
-		    type: 'GET',
+		   /* dataType: 'JSONP',*/
+		   /* jsonpCallback: 'callback',*///success后会进入这个函数，如果不声明，也不会报错，直接在success里处理也行
+		    type: 'post',
 		    data:{
 		    	key:name,
 		    	password: password
@@ -238,6 +239,21 @@
 	$("#iBlogs").on("click",".edit",function(){
 		var id = $(this).attr("data-id");
 		location.href = "addblog.do?id="+id;
+	}).on("click",".delete",function(){
+		var id = $(this).attr("data-id");
+		$.ajax({
+			type: 'post',
+			data:{
+				id:id,
+			},
+			url:'deleteblog.do',
+			success:function(data){
+				
+			},
+			fail: function(){
+				
+			}
+		})
 	})
 	
 	function gotoUserPage(ele){
