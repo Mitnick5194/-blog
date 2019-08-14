@@ -24,7 +24,7 @@
 		$.ajax({
 			type: "post",
 			data: {id:blogId},
-			url: "getblogbyid.do",
+			url: "getblogbyid",
 			success:function(data){
 				if(data.code != 200){
 					$.showToast(data.msg);
@@ -64,7 +64,7 @@
 	var form = $("#iForm");
 	var height = isMinWidth ? 150 : 600;
 	CKEDITOR.replace( 'editor' , {
- 	 filebrowserImageUploadUrl: "imgupload.do",
+ 	 filebrowserImageUploadUrl: "imgupload",
  	 language : 'zh-cn',
  	 height: height
 	});
@@ -73,7 +73,7 @@
     	 submit(function(data){
     		 if(data.code == 200){
 				 $.showToast("发布成功",function(){
-    				 location.href = "index.do";
+    				 location.href = "index";
     			 }) 
 			 }else{
 				 $.showToast(data.msg);
@@ -140,7 +140,7 @@
     	 var loading = $.showloading(op ? "正在保存" : "正在发布")
     	 $.ajax({
     		 type: 'post',
-    		 url: 'submitblog.do',
+    		 url: 'submitblog',
     		 data:datas,
     		 success: function(data){
     			typeof callback === "function" && callback(data);
@@ -201,30 +201,10 @@
  		e = e || window.event;
  		e.stopPropagation(); //禁止冒泡
  		var _this = $(this);
- 		gotoUserPage(_this);
+ 		var id = $(this).parent("section").attr("data-id");
+		location.href = "blog?id="+id;
  	})
  	
- 	function gotoUserPage(ele){
- 		var _this = $(ele);
- 		var type = _this.attr("data-type")
- 		var host = location.host+"/";
- 		var url = "";
- 		if(host.indexOf("localhost") > -1 ||host.indexOf("127.0") > -1 || host.indexOf("10.8") > -1){
- 			url = 'http://localhost:8081/sso/';
- 		}else if(serverId == 'xff'){
- 			url = "http://"+host+"ajie/sso/";
- 		}else{
- 			url = "http://"+host+"sso/";
- 		}
- 		if("login" == type){
- 			url += "login.do?ref="+location.href;
- 		}else if("userinfo" == type){
- 			url += "userinfo.do?id="+_this.attr("data-id");
- 		}
- 		
- 		location.href = url;
- 	}
-     
      $("#iHitsFrame").on("click",".hitsForbit",function(){
     	 $.Storage.set(HITS_CONTROL,true);
     	 hits.hide();

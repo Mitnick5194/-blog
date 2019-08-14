@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width , initial-scale=1,maximum-scale=1.0, user-scalable=0">
 <title>${empty id ? '发布博客': '编辑博客' }</title>
-<link href="${ pageContext.request.contextPath }/${serverId}/css/global.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/css/global.css" rel="stylesheet" type="text/css">
 <style type="text/css">
 .container{margin-bottom: 50px;}
 .nav{width: 90%; margin: 0 auto; height: 40px;background: #eee;}
@@ -58,9 +58,9 @@
 	.main>.left{display: block}
 }
 </style>
-<link href="${ pageContext.request.contextPath }/${serverId }/css/global.css" rel="stylesheet" type="text/css">
-<link href="${ pageContext.request.contextPath }/${serverId }/common/common.css" rel="stylesheet" type="text/css">
-<link href="${ pageContext.request.contextPath }/${serverId}/css/dark-mode-support.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/css/global.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/common/common.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/css/dark-mode-support.css" rel="stylesheet" type="text/css">
 </head>
 <body>
 	
@@ -74,10 +74,10 @@
 			<div class="left">
 				<span class="hits">关注公众号和小程序，获取最新动态</span>
 				<div class="wxgz-qrcode">
-					<img alt="找不到图片" src="${ pageContext.request.contextPath }/${serverId }/images/my_wxgz_qrcode.jpg">
+					<img alt="找不到图片" src="${ pageContext.request.contextPath }/images/my_wxgz_qrcode.jpg">
 				</div>
 				<div class="wxgz-qrcode">
-					<img alt="找不到图片" src="${ pageContext.request.contextPath }/${serverId }/images/my_wxapp_code.jpg">
+					<img alt="找不到图片" src="${ pageContext.request.contextPath }/images/my_wxapp_code.jpg">
 				</div>
 			</div>
 			<div class="editor-area">
@@ -139,10 +139,10 @@
       		blogId = null;
       	}
 	</script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/js/jquery-1.9.1.js"></script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/common/common.js?d=2019"></script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/js/dark-mode-support.js"></script>
-	 <script src="${ pageContext.request.contextPath }/${serverId }/ckeditor/ckeditor.js"></script>
-     <script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/blog/js/addblog.js?d=2019"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/js/jquery-1.9.1.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/common/common.js?d=2019"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/plugin/dark-mode-support.js"></script>
+	 <script src="${ pageContext.request.contextPath }/ckeditor/ckeditor.js"></script>
+     <script type="text/javascript" src="${ pageContext.request.contextPath }/blog/js/addblog.js?d=2019"></script>
 </body>
 </html>

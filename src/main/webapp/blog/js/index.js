@@ -23,7 +23,7 @@
 			data:{
 				tag: tag
 			},
-			url: 'loadblogs.do',
+			url: 'loadblogs',
 			success: function(data) {
 				console.log(data);
 				if(data.code == 200){
@@ -31,6 +31,10 @@
 					var sb = [];
 					for(let i=0;i<blogs.length;i++){
 						var blog = blogs[i];
+						if(!blog.userHeader || !blog.userHeader.length){
+							//头像为空，使用默认头像
+							blog.userHeader = "/blog/images/default_user_header.jpg";
+						}
 						var labelsStr = blog.labels;
 						if(labelsStr){
 							var labels = labelsStr.split(",");
@@ -54,7 +58,6 @@
 			},
 			complete: function(){
 				//在文档加载时已经判断了是不是夜间模式，但是异步加载的节点比较慢，所以需要手动再判断一下是不是夜间
-				console.log("内部complete");
 				if($.isDarkMode()){
 					$.toggleDarkMode($.isDarkMode())
 				}
@@ -70,7 +73,7 @@
 		$.ajax({
 			type: 'post',
 			data:{},
-			url: 'loadtags.do',
+			url: 'loadtags',
 			success: function(data){
 				if(data.code == 200){
 					var tags = data.data ||[];
@@ -104,43 +107,17 @@
 		})
 	}
 	
-	$(".user").on("click",function(e){
-		e = e || window.event;
+	$("#iBlogs").on("click" ,".title", "section" , function(e){
 		e.stopPropagation(); //禁止冒泡
-		var _this = $(this);
-		gotoUserPage(_this);
-	})
-	
-	function gotoUserPage(ele){
-		var _this = $(ele);
-		var type = _this.attr("data-type")
-		var host = location.host+"/";
-		var url = "";
-		if(host.indexOf("localhost") > -1 ||host.indexOf("127.0") > -1 || host.indexOf("10.8") > -1){
-			url = 'http://localhost:8081/sso/';
-		}else if(serverId == 'xff'){
-			url = "http://"+host+"ajie/sso/";
-		}else{
-			url = "http://"+host+"sso/";
-		}
-		if("login" == type){
-			url += "login.do?ref="+location.href;
-		}else if("userinfo" == type){
-			url += "userinfo.do?id="+_this.attr("data-id");
-		}
-		
-		location.href = url;
-	}
-	
-	$("#iBlogs").on("click" , "section" , function(e){
-		e.stopPropagation(); //禁止冒泡
-		var id = $(this).attr("data-id");
-		location.href = "blog.do?id="+id;
+		var id = $(this).parent("section").attr("data-id");
+		location.href = "blog?id="+id;
 	})
 	
 	$("#iBlogs").on("click" , ".user" , function(e){
 		e.stopPropagation(); //禁止冒泡
-		gotoUserPage($(this));
+		var _this = $(this);
+		var id = _this.attr("data-id");
+		location.href = "userinfo?id="+id;
 	})
 	
 	var tags = $("#iTags");
@@ -149,7 +126,7 @@
 		var _this = $(this);
 		tags.removeClass("active");
 		if(_this.hasClass("moreTags")){
-			window.open("moretags.do");
+			window.open("moretags");
 			return ;
 		}
 		var tag = _this.attr("data-name");
@@ -168,7 +145,7 @@
 			}else{
 				tags.addClass("active");
 			}
-		});
+	});
 	//移动端移动收起标签
 	$(document).on("touchstart",function(e){
 		if (!tags.hasClass("active")) {

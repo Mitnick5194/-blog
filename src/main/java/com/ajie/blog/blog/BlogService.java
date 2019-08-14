@@ -15,7 +15,7 @@ import com.ajie.dao.pojo.TbUser;
  * 
  * @author niezhenjie
  */
-public interface BlogService {
+public interface BlogService extends BlogListeners {
 
 	/** 正常 */
 	static public final int MARK_STATE_NORMAL = 1 << 0;
@@ -36,22 +36,30 @@ public interface BlogService {
 	static public final int MARK_VISIT_FRIEND = 1 << 12;
 
 	/** 博文状态 -- 正常 */
-	static public final KVpair STATE_NORMAL = KVpair.valueOf("正常", MARK_STATE_NORMAL);
+	static public final KVpair STATE_NORMAL = KVpair.valueOf("正常",
+			MARK_STATE_NORMAL);
 	/** 博文状态 -- 已删除 */
-	static public final KVpair STATE_DELETE = KVpair.valueOf("已删除", MARK_STATE_DELETE);
+	static public final KVpair STATE_DELETE = KVpair.valueOf("已删除",
+			MARK_STATE_DELETE);
 	/** 博文状态 -- 热门 */
-	static public final KVpair STATE_HOT = KVpair.valueOf("热门 ", MARK_STATE_HOT);
+	static public final KVpair STATE_HOT = KVpair
+			.valueOf("热门 ", MARK_STATE_HOT);
 	/** 博文状态 -- 置顶 */
 	static public final KVpair STATE_TOP = KVpair.valueOf("置顶", MARK_STATE_TOP);
 	/** 博文状态 -- 草稿 */
-	static public final KVpair STATE_DRAFT = KVpair.valueOf("草稿", MARK_STATE_DRAFT);
+	static public final KVpair STATE_DRAFT = KVpair.valueOf("草稿",
+			MARK_STATE_DRAFT);
 
-	static public final KVpair VISIT_PUBLIC = KVpair.valueOf("公开", MARK_VISIT_PUBLIC);
-	static public final KVpair VISIT_SELF = KVpair.valueOf("仅自己可见", MARK_VISIT_SELF);
-	static public final KVpair VISIT_FRIEND = KVpair.valueOf(" 仅好友可见", MARK_VISIT_FRIEND);
+	static public final KVpair VISIT_PUBLIC = KVpair.valueOf("公开",
+			MARK_VISIT_PUBLIC);
+	static public final KVpair VISIT_SELF = KVpair.valueOf("仅自己可见",
+			MARK_VISIT_SELF);
+	static public final KVpair VISIT_FRIEND = KVpair.valueOf(" 仅好友可见",
+			MARK_VISIT_FRIEND);
 
-	static public final KVpairs BLOG_MARKS = KVpairs.valueOf(STATE_NORMAL, STATE_DELETE, STATE_HOT,
-			STATE_TOP, STATE_DRAFT, VISIT_PUBLIC, VISIT_SELF, VISIT_FRIEND);
+	static public final KVpairs BLOG_MARKS = KVpairs.valueOf(STATE_NORMAL,
+			STATE_DELETE, STATE_HOT, STATE_TOP, STATE_DRAFT, VISIT_PUBLIC,
+			VISIT_SELF, VISIT_FRIEND);
 
 	/** 按照创建时间排序 */
 	public static final Comparator<TbBlog> CREATE_DATE = new Comparator<TbBlog>() {
@@ -214,5 +222,12 @@ public interface BlogService {
 	 * @return
 	 */
 	int getBlogCount(Integer userId, TbUser operator);
+
+	/**
+	 * 获取博客的标签属性
+	 * 
+	 * @return
+	 */
+	List<String> getLabels();
 
 }

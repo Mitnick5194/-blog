@@ -21,6 +21,7 @@
 		<property name="mode" value="intercept" />
 		<property name="redisClient" ref="redisClient" />
 		<property name="remoteCmd" ref="remoteCmd" />
+		<property name="xssOpen" value="true" />
 		<property name="resourceService" ref="resourceService" />
 		<property name="uriList">
 			<list>
@@ -35,6 +36,15 @@
 	<bean id="userService" name="userService"
 		class="com.ajie.sso.user.impl.RemoteUserServiceImpl">
 		<constructor-arg index="0" value="${sso-host-native}" />
+		<property name="httpInvoke">
+			<list>
+				<value>${sso-host-native}</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="ssourl" name="ssourl" class="java.lang.String">
+		<constructor-arg index="0" value="${sso-host}" />
 	</bean>
 
 	<context:component-scan base-package="com.ajie.blog.blog" />
@@ -88,7 +98,7 @@
 
 	<!-- 资源服务接口 -->
 	<bean id="resourceService" class="com.ajie.resource.impl.RemoteResourceServiceImpl">
-		<property name="resourceURL" value="${resource-host}" />
+		<property name="urls" value="${resource-service_url}" />
 	</bean>
 
 	<bean class="java.lang.String" id="stopCommand">
@@ -96,5 +106,19 @@
 	</bean>
 	<bean class="java.lang.String" id="admin">
 		<constructor-arg index="0" value="${admin-user-name}" />
+	</bean>
+
+	<!-- sso系统内网映射链接 -->
+	<bean class="java.lang.String" id="mappingSso">
+		<constructor-arg index="0" value="${mapping-sso-url}" />
+	</bean>
+
+	<!-- blog系统内网映射链接 -->
+	<bean class="java.lang.String" id="mappingBlog">
+		<constructor-arg index="0" value="${mapping-blog-url}" />
+	</bean>
+
+	<bean class="com.ajie.blog.blog.impl.BlogWatcher" id="blogWatcher">
+		<property name="blogService" ref="blogService"></property>
 	</bean>
 </beans>

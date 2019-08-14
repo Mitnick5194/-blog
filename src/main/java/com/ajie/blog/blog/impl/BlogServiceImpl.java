@@ -1,5 +1,6 @@
 package com.ajie.blog.blog.impl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.ajie.blog.blog.BlogListener;
 import com.ajie.blog.blog.BlogService;
 import com.ajie.blog.blog.RedisBlog;
 import com.ajie.blog.blog.RedisBlog.RedisBlogVo;
@@ -32,9 +34,10 @@ import com.ajie.dao.pojo.TbUser;
 import com.ajie.sso.role.Role;
 import com.ajie.sso.role.RoleUtils;
 
-@Service
+@Service("blogService")
 public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
-	private static final Logger logger = LoggerFactory.getLogger(BlogServiceImpl.class);
+	private static final Logger logger = LoggerFactory
+			.getLogger(BlogServiceImpl.class);
 	/** 数据库mapper */
 	@Resource
 	private TbBlogMapper mapper;
@@ -50,13 +53,15 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 	/** redis辅助 */
 	private RedisBlog redisBlog;
 
+	private List<BlogListener> blogListeners;
+
 	private Object lock = new Object();
 
 	public BlogServiceImpl() {
 		// 定时对redis缓存数据进行处理
 		String ymd = TimeUtil.formatYMD(new Date());
-		TimingTask.createTimingTask("blog-timing", this, TimeUtil.parse(ymd + " 00:10"),
-				24 * 60 * 60 * 1000);// 零时十分，准时更新,每天这个时间执行
+		TimingTask.createTimingTask("blog-timing", this,
+				TimeUtil.parse(ymd + " 00:10"), 24 * 60 * 60 * 1000);// 零时十分，准时更新,每天这个时间执行
 	}
 
 	public RedisBlog getRedisBlog() {
@@ -142,21 +147,17 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 	@Override
 	public List<TbBlog> getBlogs(int state, TbUser operator) {
 		// 非管理员或超级用户不能查看删除的博客
-		/*if (null == operator && state == MARK_STATE_DELETE)
-
-			if (null != operator
-					&& state == MARK_STATE_DELETE
-					&& (checkRole(operator.getRoleids(), "管理员") || checkRole(operator.getRoleids(),
-							"超级用户"))) {
-				return emptyList();
-			}
-		TbBlogExample ex = new TbBlogExample();
-		Criteria criteria = ex.createCriteria();
-		criteria.andMarkEqualTo(state);
-		List<TbBlog> blogs = mapper.selectByExample(ex);
-		if (null == blogs)
-			return emptyList();
-		return blogs;*/
+		/*
+		 * if (null == operator && state == MARK_STATE_DELETE)
+		 * 
+		 * if (null != operator && state == MARK_STATE_DELETE &&
+		 * (checkRole(operator.getRoleids(), "管理员") ||
+		 * checkRole(operator.getRoleids(), "超级用户"))) { return emptyList(); }
+		 * TbBlogExample ex = new TbBlogExample(); Criteria criteria =
+		 * ex.createCriteria(); criteria.andMarkEqualTo(state); List<TbBlog>
+		 * blogs = mapper.selectByExample(ex); if (null == blogs) return
+		 * emptyList(); return blogs;
+		 */
 		return emptyList();
 	}
 
@@ -183,8 +184,10 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 			}
 		} else {
 			// 处理敏感状态
-			if (isState(state, MARK_STATE_DELETE) || isState(state, MARK_VISIT_SELF)
-					|| isState(state, MARK_VISIT_FRIEND) || isState(state, MARK_STATE_DRAFT)) {
+			if (isState(state, MARK_STATE_DELETE)
+					|| isState(state, MARK_VISIT_SELF)
+					|| isState(state, MARK_VISIT_FRIEND)
+					|| isState(state, MARK_STATE_DRAFT)) {
 				if (!isAdmin(operator)) {
 					// 只有管理员能查看删除状态的博客
 					mark.removeMark(MARK_STATE_DELETE);
@@ -330,6 +333,17 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 		int ret = mapper.insert(blog);
 		if (ret != 1)
 			throw new BlogException("博客发布失败，请稍后再试");
+		final TbBlog b = blog;
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				List<BlogListener> listeners = getBlogListeners();
+				for (BlogListener l : listeners) {
+					l.onCreate(b);
+				}
+			}
+		}).start();
 		return blog;
 	}
 
@@ -351,8 +365,9 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 
 	@Override
 	public void deleteAll(TbUser user, TbUser operator) throws BlogException {
-		if (null == user || user.getId() == 0 || null == operator || operator.getId() == 0)
-			throw new BlogException("删除异常，请稍后再试");
+		if (null == user || user.getId() == 0 || null == operator
+				|| operator.getId() == 0)
+			throw new BlogException("删除失败，删除用户或操作者为空");
 		if (user.getId() != operator.getId() || !isAdmin(operator))
 			throw new BlogException("删除失败，不能删除非自己的博客");
 		mapper.updateBlogsMark(operator.getId(), MARK_STATE_DELETE);
@@ -362,14 +377,20 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 	@Override
 	public TbBlog updateBlog(TbBlog blog, TbUser operator) throws BlogException {
 		if (null == operator)
-			throw new BlogException("无法更新博客，操作者为空");
+			throw new BlogException("删除失败，操作者为空");
 		if (null == blog || blog.getId() == 0)
-			throw new BlogException("无法更新博客，文章不存在");
-		TbBlogExample ex = new TbBlogExample();
-		Criteria criteria = ex.createCriteria();
-		criteria.andIdEqualTo(blog.getId());
-		criteria.andUseridEqualTo(operator.getId());
-		mapper.updateByExample(blog, ex);
+			throw new BlogException("删除失败，文章不存在");
+		/*
+		 * TbBlogExample ex = new TbBlogExample(); Criteria criteria =
+		 * ex.createCriteria(); criteria.andIdEqualTo(blog.getId());
+		 * criteria.andUseridEqualTo(operator.getId());
+		 * mapper.updateByExample(blog, ex);
+		 */
+		TbBlog b = getBlogById(blog.getId(), operator);
+		if (null == b) {
+			throw new BlogException("删除失败，文章不存在");
+		}
+		mapper.updatePartByPrimaryKey(blog);
 		return blog;
 	}
 
@@ -432,7 +453,8 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 	private boolean isAdmin(TbUser user) {
 		if (null == user)
 			return false;
-		return checkRole(user.getRoleids(), "管理员") || checkRole(user.getRoleids(), "超级用户");
+		return checkRole(user.getRoleids(), "管理员")
+				|| checkRole(user.getRoleids(), "超级用户");
 	}
 
 	@Override
@@ -461,8 +483,8 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 			int commentCount = commentService.getBlogCommentCount(blog.getId());
 			int readNum = 0;
 			try {
-				RedisBlogVo vo = redisClient.hgetAsBean(REDIS_PREFIX, REDIS_PREFIX + blog.getId(),
-						RedisBlogVo.class);
+				RedisBlogVo vo = redisClient.hgetAsBean(REDIS_PREFIX,
+						REDIS_PREFIX + blog.getId(), RedisBlogVo.class);
 				if (null != vo)
 					readNum = vo.getReadnum();
 			} catch (RedisException e) {
@@ -482,5 +504,41 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 			return mapper.getBlogCount();
 		}
 		return mapper.getUserBlogCount(userId);
+	}
+
+	@Override
+	public List<String> getLabels() {
+		List<String> lables = mapper.selectBlogLabels();
+		if (null == lables) {
+			return Collections.emptyList();
+		}
+		return lables;
+	}
+
+	@Override
+	public void register(BlogListener listener) {
+		if (null == listener) {
+			return;
+		}
+		if (null == blogListeners) {
+			blogListeners = new ArrayList<BlogListener>();
+		}
+		blogListeners.add(listener);
+	}
+
+	@Override
+	public boolean unRegister(BlogListener listener) {
+		if (null == listener) {
+			return false;
+		}
+		return blogListeners.remove(listener);
+	}
+
+	@Override
+	public List<BlogListener> getBlogListeners() {
+		if (null == blogListeners) {
+			return Collections.emptyList();
+		}
+		return blogListeners;
 	}
 }

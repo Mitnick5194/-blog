@@ -7,11 +7,11 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width , initial-scale=1,maximum-scale=1.0, user-scalable=0">
 <title>首页</title>
-<link href="${ pageContext.request.contextPath }/${serverId}/common/common.css" rel="stylesheet" type="text/css">
-<link href="${ pageContext.request.contextPath }/${serverId}/css/global.css" rel="stylesheet" type="text/css">
-<link href="${ pageContext.request.contextPath }/${serverId}/css/dark-mode-support.css" rel="stylesheet" type="text/css">
-<link href="${ pageContext.request.contextPath }/${serverId}/blog/css/index.css" rel="stylesheet" type="text/css">
-<link href="${ pageContext.request.contextPath }/${serverId}/plugin/suspend-btn.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/common/common.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/css/global.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/css/dark-mode-support.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/blog/css/index.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/plugin/suspend-btn.css" rel="stylesheet" type="text/css">
 
 <style type="text/css">
 </style>
@@ -39,23 +39,30 @@ window.addEventListener("error" , function(e){
 			<span class="bar-icon"></span>
 		</div>
 		<div class="header-navi darkMode">
-			<div onclick="javascript:location.href='addblog.do'" class="addblog">写博客</div>
+			<div onclick="javascript:location.href='addblog'" class="addblog">写博客</div>
 			<div class="user-header">
 				<c:choose>
 					<c:when test="${not empty userid }">
 						<div class="user-info user"  data-id="${userid }" data-type="userinfo" >
-							<div class="user-name">${username }</div><img  class="user-header-img" src="${userheader }" />
+							<c:choose>
+								<c:when test="${empty userheader }">
+									<div class="user-name">${username }</div><img  class="user-header-img" src="${ pageContext.request.contextPath }/images/default_user_header.jpg" />
+								</c:when>
+								<c:otherwise>
+									<div class="user-name">独孤怎会求败</div><img  class="user-header-img" src="${userheader }" />
+								</c:otherwise>
+							</c:choose>
 						</div>
 					</c:when>
 					<c:otherwise>
-						<div class="login-btn user" data-type="login" data-uri="sso/login.do">登录/注册</div>
+						<div class="login-btn" onclick="javascript:window.location.href='gotologin'">登录/注册</div>
 					</c:otherwise>
 				</c:choose>
 			</div>
 		</div>
 
 		<div class="container">
-			<form id="iForm" class="hidden" method="post" action="blog.do">
+			<form id="iForm" class="hidden" method="post" action="blog">
 				<input name="id" type="hidden" >
 			</form>
 			<div id="iTags" class="tags-block darkMode">
@@ -67,10 +74,10 @@ window.addEventListener("error" , function(e){
 			<div class="qr-code">
 				<div>关注公众号和小程序，获取获取最新状态</div>
 				<div>
-					<img src="${ pageContext.request.contextPath }/${serverId}/images/my_wxgz_qrcode.jpg" />
+					<img src="${ pageContext.request.contextPath }/images/my_wxgz_qrcode.jpg" />
 				</div>
 				<div>
-					<img src="${ pageContext.request.contextPath }/${serverId}/images/my_wxapp_code.jpg" />
+					<img src="${ pageContext.request.contextPath }/images/my_wxapp_code.jpg" />
 				</div>
 			</div>
 		</div>
@@ -113,9 +120,9 @@ window.addEventListener("error" , function(e){
 	<script type="text/javascript">
 		var serverId = '${serverId}';
 	</script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/js/jquery-1.9.1.js"></script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/plugin/suspend-btn.js"></script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/common/common.js?d=2019"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/js/jquery-1.9.1.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/plugin/suspend-btn.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/common/common.js?d=2019"></script>
 	<script type="text/javascript">
 		//日志弹窗
 		var  logFrame = $("#iLogFrame").getWindow();
@@ -186,10 +193,10 @@ window.addEventListener("error" , function(e){
 			logFrame.show();
 		}
 	</script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/js/dark-mode-support.js"></script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/js/suspend-btn-instance.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/plugin/dark-mode-support.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/js/suspend-btn-instance.js"></script>
 	<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/blog/js/index.js?d=20190308"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/blog/js/index.js?d=20190308"></script>
 	<script type="text/javascript">
 	/*var config = {};
 	var configstr = '${config}';

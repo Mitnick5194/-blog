@@ -32,7 +32,8 @@ import com.ajie.dao.pojo.TbLabelExample.Criteria;
  */
 @Service
 public class LabelServiceImpl implements LabelService {
-	private static final Logger logger = LoggerFactory.getLogger(LabelServiceImpl.class);
+	private static final Logger logger = LoggerFactory
+			.getLogger(LabelServiceImpl.class);
 	@Resource
 	private TbLabelMapper mapper;
 
@@ -41,6 +42,9 @@ public class LabelServiceImpl implements LabelService {
 
 	@Resource
 	private RedisClient redis;
+
+	public LabelServiceImpl() {
+	}
 
 	@Override
 	public List<LabelVo> getLabels() {
@@ -74,7 +78,8 @@ public class LabelServiceImpl implements LabelService {
 	}
 
 	@Override
-	public void openLabels(TbBlog blog, List<String> labelNames) throws BlogException {
+	public void openLabels(TbBlog blog, List<String> labelNames)
+			throws BlogException {
 		if (null == labelNames)
 			return;
 		// 先获取或创建所有传入的标签

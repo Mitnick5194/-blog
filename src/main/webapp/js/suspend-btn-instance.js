@@ -6,7 +6,7 @@
  */
 (function(window,$){
 	var dayIcon = {
-		url:'http://www.ajie18.top/images/day3.jpg',
+		url:'http://www.nzjie.cn/static/images/day3.jpg',
 		text: "日间模式",
 		css: {},
 		callback:function(panel) {
@@ -20,7 +20,7 @@
 		}
 	}
 	var darkIcon = {
-		url:'http://www.ajie18.top/images/dark.jpg',
+		url:'http://www.nzjie.cn/static/images/dark.jpg',
 		text: "夜间模式",
 		css: {},
 		callback:function(panel) {
@@ -36,7 +36,7 @@
 	var icon = $.isDarkMode() ? dayIcon  : darkIcon;
 	//悬浮菜单
 	var icons = [{
-		url:'http://www.ajie18.top/images/fresh.jpg',
+		url:'http://www.nzjie.cn/static/images/fresh.jpg',
 		text: "刷新",
 		css: {},
 		callback:function() {
@@ -44,14 +44,14 @@
 			location.reload();
 		}
 	},{
-		url:'http://www.ajie18.top/images/gotoTop.jpg',
+		url:'http://www.nzjie.cn/static/images/gotoTop.jpg',
 		text: "顶部",
 		css: {},
 		callback:function(panel) {
 			$('html,body').animate({scrollTop:0},'fast');
 		}
 	},{
-		url:'http://www.ajie18.top/images/logging.jpg',
+		url:'http://www.nzjie.cn/static/images/logging.jpg',
 		text: "日志",
 		css: {},
 		callback:function() {
@@ -60,14 +60,14 @@
 		}
 	},icon
 	,{
-		url:'http://www.ajie18.top/images/manager.jpg',
+		url:'http://www.nzjie.cn/static/images/manager.jpg',
 		text: "后台",
 		css: {},
 		callback:function(panel){
 			location.href = "manager.do";
 		}
 	},{
-		url:'http://www.ajie18.top/images/wxapp.jpg',
+		url:'http://www.nzjie.cn/static/images/wxapp.jpg',
 		text: "小程序",
 		css: {},
 		callback:function(panel){

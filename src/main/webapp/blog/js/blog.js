@@ -42,7 +42,7 @@
 			data: {
 				id: id,
 			},
-			url: 'getblogbyid.do',
+			url: 'getblogbyid',
 			success: function(data){
 				if(data.code == 200){
 					typeof callback === 'function' && callback(data.data);
@@ -66,7 +66,7 @@
 			data: {
 				blogId: id,
 			},
-			url: 'getcommentsbyblog.do',
+			url: 'getcommentsbyblog',
 			success: function(data){
 				if(data.code == 200){
 					typeof callback === 'function' && callback(data.data);
@@ -116,7 +116,7 @@
 				blogId: id,
 				content: content
 			},
-			url: 'createcomment.do',
+			url: 'createcomment',
 			success: function(data){
 				if(data.code == 200){
 					$.showToast("发布成功",1500,function(){
@@ -150,7 +150,8 @@
 		return true;
 	}
 	
-	var host = "http://"+location.host +"/blog/"+serverId+"/images/";
+	//var host = "http://"+location.host +"/blog/"+serverId+"/images/";
+	var host = "";//TODO
 	var url1 = host +"my_wxgz_qrcode.jpg";
 	var url2 = host+"my_wxapp_code.jpg";
 	var urls = [url1,url2];
@@ -167,7 +168,7 @@
 	
 	//登录
 	$("#iLoginBtn").on("click",function(){
-		var url = "dologin.do";
+		var url = "dologin";
 		var _this  = $(this);
 		var parent = _this.parent();
 		var name = $.trim(parent.find("input[name=key]").val());
@@ -184,39 +185,49 @@
 		
 		var host = location.host;
 		var url;
-		if(host.indexOf("localhost") > -1 ||host.indexOf("127.0") > -1 || host.indexOf("10.8") > -1){
+		/*if(host.indexOf("localhost") > -1 ||host.indexOf("127.0") > -1 || host.indexOf("10.8") > -1){
 			url = "http://localhost:8081/sso/dologin.do";
 		}else if(serverId == 'xff'){
 			url = "http://www.ajie18.top/ajie/sso/dologin.do";
 		}
 		else{
 			url = "http://www.ajie18.top/sso/dologin.do";
-		}
+		}*/
 		$.ajax({
-		    url: url,
-		   /* dataType: 'JSONP',*/
-		   /* jsonpCallback: 'callback',*///success后会进入这个函数，如果不声明，也不会报错，直接在success里处理也行
-		    type: 'post',
-		    data:{
-		    	key:name,
-		    	password: password
-		    },
-		    success: function (data) {
-		    	if(data.code != 200){
-		    		$.showToast(data.msg);
-		    		return;
-		    	}
-		    	$.showToast("登录成功",function(){
-		    		//清空内容
-		    		$("#iLoginForm").find("input").val("");
-		    		loginFrame.hide();
-		    		changeHeader(data.data);
-		    	})
-		    },
-		    error: function(e){
-		    	$.showToast(e.statusText);
-		    }
-		});
+			url: 'getssohost',
+			success: function(data){
+				var url = data.msg;
+				$.ajax({
+				    url: url,
+				   /* dataType: 'JSONP',*/
+				   /* jsonpCallback: 'callback',*///success后会进入这个函数，如果不声明，也不会报错，直接在success里处理也行
+				    type: 'post',
+				    data:{
+				    	key:name,
+				    	password: password
+				    },
+				    success: function (data) {
+				    	if(data.code != 200){
+				    		$.showToast(data.msg);
+				    		return;
+				    	}
+				    	$.showToast("登录成功",function(){
+				    		//清空内容
+				    		$("#iLoginForm").find("input").val("");
+				    		loginFrame.hide();
+				    		changeHeader(data.data);
+				    	})
+				    },
+				    error: function(e){
+				    	$.showToast(e.statusText);
+				    }
+				});
+			},
+			error: function(e){
+				$.showToast(e.statusText);
+			}
+		})
+		
 	})
 	
 	/**改变头部，显示用户登录*/
@@ -233,12 +244,13 @@
 		e = e || window.event;
 		e.stopPropagation(); //禁止冒泡
 		var _this = $(this);
-		gotoUserPage(_this);
+		var id = _this.parent("section").attr("data-id");
+		location.href = "blog?id="+id;
 	})
 	
 	$("#iBlogs").on("click",".edit",function(){
 		var id = $(this).attr("data-id");
-		location.href = "addblog.do?id="+id;
+		location.href = "addblog?id="+id;
 	}).on("click",".delete",function(){
 		var id = $(this).attr("data-id");
 		$.ajax({
@@ -246,7 +258,7 @@
 			data:{
 				id:id,
 			},
-			url:'deleteblog.do',
+			url:'deleteblog',
 			success:function(data){
 				
 			},
@@ -256,27 +268,4 @@
 		})
 	})
 	
-	function gotoUserPage(ele){
-		var _this = $(ele);
-		var type = _this.attr("data-type")
-		var host = location.host+"/";
-		var url = "";
-		if(host.indexOf("localhost") > -1 ||host.indexOf("127.0") > -1 || host.indexOf("10.8") > -1){
-			url = 'http://localhost:8081/sso/';
-		}else if(serverId == 'xff'){
-			url = "http://"+host+"ajie/sso/";
-		}else{
-			url = "http://"+host+"sso/";
-		}
-		if("login" == type){
-			url += "login.do?ref="+location.href;
-		}else if("userinfo" == type){
-			url += "userinfo.do?id="+_this.attr("data-id");
-		}
-		
-		location.href = url;
-	}
-	
-	
-
 })()

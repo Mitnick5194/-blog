@@ -1,5 +1,6 @@
 package com.ajie.blog.controller;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -10,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -40,11 +42,13 @@ import com.ajie.chilli.picture.PictureService;
 import com.ajie.chilli.utils.TimeUtil;
 import com.ajie.chilli.utils.Toolkits;
 import com.ajie.chilli.utils.common.StringUtils;
+import com.ajie.dao.mapper.TbBlogMapper;
 import com.ajie.dao.pojo.TbBlog;
 import com.ajie.dao.pojo.TbUser;
 import com.ajie.resource.ResourceService;
 import com.ajie.sso.user.UserService;
 import com.ajie.web.XssDefenseRequest;
+import com.ajie.web.utils.CookieUtils;
 
 /**
  * 博客控制器
@@ -56,7 +60,8 @@ import com.ajie.web.XssDefenseRequest;
 public class BlogController {
 	public Logger logger = LoggerFactory.getLogger(BlogController.class);
 	/** 博客内容标签黑名单 */
-	private static final List<String> CONTENT_BLACK_ELE = SwitchUnmodifiableList.valueOf("script");
+	private static final List<String> CONTENT_BLACK_ELE = SwitchUnmodifiableList
+			.valueOf("script");
 	private static String prefix = "blog/";
 	@Resource
 	private BlogService blogService;
@@ -77,12 +82,26 @@ public class BlogController {
 	@Resource
 	private String admin;
 
+	@Resource
+	private TbBlogMapper mapper;
+
+	/** sso系统链接 */
+	@Resource(name = "ssourl")
+	private String ssoUrl;
+
+	/** sso系统内网映射链接 */
+	@Resource(name = "mappingSso")
+	private String mappingSso;
+	/** sso系统链接 */
+	@Resource(name = "mappingBlog")
+	private String mappingBlog;
+
 	/**
 	 * 优雅的方式关闭服务器
 	 * 
 	 * @param request
 	 */
-	@RequestMapping("/stop.do")
+	@RequestMapping("/stop")
 	public void stop(HttpServletRequest request, HttpServletResponse response) {
 		String passwd = request.getParameter("passwd");
 		if (null != passwd && stopCommand.equals(passwd)) {
@@ -107,11 +126,12 @@ public class BlogController {
 	 * @param response
 	 * @return
 	 */
-	@RequestMapping("/index.do")
+	@RequestMapping("index")
 	public String index(HttpServletRequest request, HttpServletResponse response) {
+		logger.info("index pager");
 		TbUser user = userService.getUser(request);
 		if (null != user) {
-			if (null != user.getNickname()) {
+			if (!StringUtils.isEmpty(user.getNickname())) {
 				request.setAttribute("username", user.getNickname());
 			} else {
 				request.setAttribute("username", user.getName());
@@ -119,26 +139,7 @@ public class BlogController {
 			request.setAttribute("userheader", user.getHeader());
 			request.setAttribute("userid", user.getId());
 		}
-		// 获取微信配置
-		/*WeixinResource wx = resource.getWeixinResource();
-		JsConfig config = null;
-		if (null != wx) {
-			config = wx.getJsConfiig();
-			if (null != config) {
-				String url = getRequestUrl(request);
-				config.sign(url);
-				request.setAttribute("config", JsonUtils.toJSONString(config));
-			}
-		}
-		if (null == config) {
-			request.setAttribute("config", "");
-		}*/
-		/*List<String> list = new ArrayList<String>();
-		list.add("div");
-		request = XssDefenseRequest
-				.toXssDefenseRequest(request, XssDefenseRequest.MODE_WHITE, list);
-		String parameter = request.getParameter("xss");
-		System.out.println(parameter);*/
+		logger.info("into blog controller");
 		return prefix + "index";
 	}
 
@@ -149,7 +150,7 @@ public class BlogController {
 	 * @param response
 	 * @return
 	 */
-	@RequestMapping("/blog.do")
+	@RequestMapping("/blog")
 	public String blog(HttpServletRequest request, HttpServletResponse response) {
 		TbUser user = userService.getUser(request);
 		if (null != user) {
@@ -162,21 +163,15 @@ public class BlogController {
 		RedisBlog redisBlog = new RedisBlog(redisClient);
 		RedisBlogVo vo = redisBlog.getRedisBlog(id);
 		vo.updateReadNum();
-		/*// 获取微信配置
-		WeixinResource wx = resource.getWeixinResource();
-		JsConfig config = null;
-		if (null != wx) {
-			config = wx.getJsConfiig();
-			if (null != config) {
-				String url = getRequestUrl(request);
-				config.sign(url);
-				request.setAttribute("config", JsonUtils.toJSONString(config));
-			}
-		}
-		if (null == config) {
-			request.setAttribute("config", "");
-		}*/
-		response.addHeader("Access-Control-Allow-Origin", "http://localhost:8081");
+		/*
+		 * // 获取微信配置 WeixinResource wx = resource.getWeixinResource(); JsConfig
+		 * config = null; if (null != wx) { config = wx.getJsConfiig(); if (null
+		 * != config) { String url = getRequestUrl(request); config.sign(url);
+		 * request.setAttribute("config", JsonUtils.toJSONString(config)); } }
+		 * if (null == config) { request.setAttribute("config", ""); }
+		 */
+		response.addHeader("Access-Control-Allow-Origin",
+				"http://localhost:8081");
 		response.addHeader("Access-Control-Allow-Methods", "GET, POST, PUT");
 		response.addHeader("Access-Control-Allow-Headers", "X-Custom-Header");
 		request.setAttribute("id", id);
@@ -189,14 +184,12 @@ public class BlogController {
 	 * @param request
 	 * @return
 	 */
-	/*	private String getRequestUrl(HttpServletRequest request) {
-			String url = request.getRequestURL().toString();
-			String query = request.getQueryString();
-			if (null != query) {
-				url += "?" + query;
-			}
-			return url;
-		}*/
+	/*
+	 * private String getRequestUrl(HttpServletRequest request) { String url =
+	 * request.getRequestURL().toString(); String query =
+	 * request.getQueryString(); if (null != query) { url += "?" + query; }
+	 * return url; }
+	 */
 
 	/**
 	 * 添加或编辑博客页面
@@ -205,8 +198,9 @@ public class BlogController {
 	 * @param response
 	 * @return
 	 */
-	@RequestMapping("/addblog.do")
-	public String addblog(HttpServletRequest request, HttpServletResponse response) {
+	@RequestMapping("/addblog")
+	public String addblog(HttpServletRequest request,
+			HttpServletResponse response) {
 		String id = request.getParameter("id");
 		TbUser user = userService.getUser(request);
 		if (null != user) {
@@ -218,8 +212,9 @@ public class BlogController {
 		return prefix + "addblog";
 	}
 
-	@RequestMapping("/moretags.do")
-	public String moretags(HttpServletRequest request, HttpServletResponse response) {
+	@RequestMapping("/moretags")
+	public String moretags(HttpServletRequest request,
+			HttpServletResponse response) {
 		logger.info(1 / 0 + "");
 		return prefix + "moretags";
 	}
@@ -230,10 +225,12 @@ public class BlogController {
 	 * @param request
 	 * @param response
 	 * @return
+	 * @throws IOException
 	 */
 	@ResponseBody
 	@RequestMapping("/loadblogs")
-	public ResponseResult loadblogs(HttpServletRequest request, HttpServletResponse response) {
+	public ResponseResult loadblogs(HttpServletRequest request,
+			HttpServletResponse response) {
 		TbUser user = userService.getUser(request);
 		String tag = request.getParameter("tag");
 		// 小程序请求tag没带过来时，拿到的竟然是带引号的"null"，坑啊
@@ -268,21 +265,18 @@ public class BlogController {
 	 */
 	@ResponseBody
 	@RequestMapping("/myblogs")
-	public Object myblogs(HttpServletRequest request, HttpServletResponse response)
-			throws IOException {
+	public Object myblogs(HttpServletRequest request,
+			HttpServletResponse response) throws IOException {
 		TbUser user = userService.getUser(request);
 		String callback = request.getParameter("callback");
 		ResponseResult result = null;
-		/* 别人也能访问你的主页
-		 if (null == user) {
-			result = ResponseResult.newResult(ResponseResult.CODE_SESSION_INVALID, "会话过期，请重新登录");
-			if (null == callback)
-				return result;
-			String jsonp = ResponseResult.toJsonp(result, "callback");
-			PrintWriter out = response.getWriter();
-			out.write(jsonp);
-			return null;
-		}*/
+		/*
+		 * 别人也能访问你的主页 if (null == user) { result =
+		 * ResponseResult.newResult(ResponseResult.CODE_SESSION_INVALID,
+		 * "会话过期，请重新登录"); if (null == callback) return result; String jsonp =
+		 * ResponseResult.toJsonp(result, "callback"); PrintWriter out =
+		 * response.getWriter(); out.write(jsonp); return null; }
+		 */
 
 		String type = request.getParameter("type");
 		List<TbBlog> blogs = null;
@@ -295,7 +289,8 @@ public class BlogController {
 			state |= BlogService.MARK_VISIT_SELF;
 			blogs = blogService.getBlogs(user, state, user);
 		} else if (StringUtils.eq("draft", type)) { // 草稿
-			blogs = blogService.getBlogs(user, BlogService.MARK_STATE_DRAFT, user);
+			blogs = blogService.getBlogs(user, BlogService.MARK_STATE_DRAFT,
+					user);
 		}
 		List<BlogVo> trans = new TransList<BlogVo, TbBlog>(blogs) {
 			@Override
@@ -322,7 +317,8 @@ public class BlogController {
 	 */
 	@ResponseBody
 	@RequestMapping("/loadtags")
-	public ResponseResult loadtags(HttpServletRequest request, HttpServletResponse response) {
+	public ResponseResult loadtags(HttpServletRequest request,
+			HttpServletResponse response) {
 		List<LabelVo> labels = labelService.getLabels();
 		return ResponseResult.newResult(ResponseResult.CODE_SUC, labels);
 	}
@@ -336,13 +332,15 @@ public class BlogController {
 	 */
 	@ResponseBody
 	@RequestMapping("/getblogbyid")
-	public ResponseResult getblogbyid(HttpServletRequest request, HttpServletResponse response) {
+	public ResponseResult getblogbyid(HttpServletRequest request,
+			HttpServletResponse response) {
 		int id = Toolkits.toInt(request.getParameter("id"), 0);
 		TbUser operator = userService.getUser(request);
 		try {
 			TbBlog blog = blogService.getBlogById(id, operator);
 			if (null == blog) {
-				return ResponseResult.newResult(ResponseResult.CODE_ERR, "文章不存在");
+				return ResponseResult.newResult(ResponseResult.CODE_ERR,
+						"文章不存在");
 			}
 			BlogVo vo = new BlogVo(blog);
 			if (null != operator) {
@@ -352,7 +350,8 @@ public class BlogController {
 			}
 			return ResponseResult.newResult(ResponseResult.CODE_SUC, vo);
 		} catch (BlogException e) {
-			return ResponseResult.newResult(ResponseResult.CODE_ERR, e.getMessage());
+			return ResponseResult.newResult(ResponseResult.CODE_ERR,
+					e.getMessage());
 		}
 	}
 
@@ -366,16 +365,17 @@ public class BlogController {
 	 */
 	@ResponseBody
 	@RequestMapping("/submitblog")
-	public ResponseResult submitblog(HttpServletRequest request, HttpServletResponse response)
-			throws UnsupportedEncodingException {
+	public ResponseResult submitblog(HttpServletRequest request,
+			HttpServletResponse response) throws UnsupportedEncodingException {
 		request.setCharacterEncoding("utf-8");
 		setAjaxContentType(response);
 		TbUser operator = userService.getUser(request);
 		if (null == operator) {
-			return ResponseResult.newResult(ResponseResult.CODE_SESSION_INVALID, "会话过期，请重新登录");
+			return ResponseResult.newResult(
+					ResponseResult.CODE_SESSION_INVALID, "会话过期，请重新登录");
 		}
-		request = XssDefenseRequest.toXssDefenseRequest(request, XssDefenseRequest.MODE_BLACK,
-				CONTENT_BLACK_ELE);
+		request = XssDefenseRequest.toXssDefenseRequest(request,
+				XssDefenseRequest.MODE_BLACK, CONTENT_BLACK_ELE);
 		boolean isDraft = "draft".equals(request.getParameter("op"));
 		String blogId = request.getParameter("id");
 		String title = request.getParameter("title");
@@ -408,19 +408,23 @@ public class BlogController {
 
 		} catch (BlogException e) {
 			logger.warn("", e);
-			return ResponseResult.newResult(ResponseResult.CODE_ERR,
-					isDraft ? "无法添加草稿【" + e.getMessage() + "】" : "发布失败【" + e.getMessage() + "】");
+			return ResponseResult.newResult(
+					ResponseResult.CODE_ERR,
+					isDraft ? "无法添加草稿【" + e.getMessage() + "】" : "发布失败【"
+							+ e.getMessage() + "】");
 		}
-		List<String> list = Arrays.asList(labelstrs.split(LabelService.BLOG_IDS_SEPARATOR));
+		List<String> list = Arrays.asList(labelstrs
+				.split(LabelService.BLOG_IDS_SEPARATOR));
 		try {
 			labelService.openLabels(blog, list);
 		} catch (BlogException e) {
 			logger.warn("", e);
 			String type = isDraft ? "草稿保存" : "博客发布";
-			return ResponseResult.newResult(ResponseResult.CODE_ERR, type + "成功，标签保存失败");
+			return ResponseResult.newResult(ResponseResult.CODE_ERR, type
+					+ "成功，标签保存失败");
 		}
-		return ResponseResult.newResult(ResponseResult.CODE_SUC, isDraft ? "保存成功" : "发布成功",
-				blog.getId());
+		return ResponseResult.newResult(ResponseResult.CODE_SUC,
+				isDraft ? "保存成功" : "发布成功", blog.getId());
 	}
 
 	/**
@@ -464,13 +468,15 @@ public class BlogController {
 	@SuppressWarnings("deprecation")
 	@ResponseBody
 	@RequestMapping("/getblogbyuser")
-	public Object getblogbyuser(HttpServletRequest request, HttpServletResponse response) {
+	public Object getblogbyuser(HttpServletRequest request,
+			HttpServletResponse response) {
 		int userId = Toolkits.toInt(request.getParameter("userId"), 0);
 		String callback = request.getParameter("callback");
 		TbUser user = new TbUser();
 		user.setId(userId);
 		List<TbBlog> blogs = blogService.getMyBlogs(user);
-		ResponseResult result = ResponseResult.newResult(ResponseResult.CODE_SUC, blogs);
+		ResponseResult result = ResponseResult.newResult(
+				ResponseResult.CODE_SUC, blogs);
 		if (null == callback) {
 			return result;
 		}
@@ -481,8 +487,8 @@ public class BlogController {
 
 	@ResponseBody
 	@RequestMapping("deleteblog")
-	public Object deleteblog(HttpServletRequest request, HttpServletResponse response)
-			throws IOException {
+	public Object deleteblog(HttpServletRequest request,
+			HttpServletResponse response) throws IOException {
 		TbUser operator = userService.getUser(request);
 		int id = Toolkits.toInt(request.getParameter("id"), 0);
 		String callback = request.getParameter("callback");
@@ -508,18 +514,90 @@ public class BlogController {
 
 	@ResponseBody
 	@RequestMapping("getblogcount")
-	public ResponseResult getblogcount(HttpServletRequest request, HttpServletResponse response)
-			throws IOException {
+	public ResponseResult getblogcount(HttpServletRequest request,
+			HttpServletResponse response) throws IOException {
 		TbUser operator = userService.getUser(request);
 		int userId = Toolkits.toInt(request.getParameter("id"), 0);
 		int count = blogService.getBlogCount(userId, operator);
 		String callback = request.getParameter("callback");
 		if (null == callback)
 			return ResponseResult.success(count);
-		String jsonp = ResponseResult.toJsonp(ResponseResult.success(count), "callback");
+		String jsonp = ResponseResult.toJsonp(ResponseResult.success(count),
+				"callback");
 		PrintWriter out = response.getWriter();
 		out.write(jsonp);
 		return null;
+	}
+
+	/**
+	 * 退出登录
+	 * 
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping("/logout")
+	public ResponseResult logout(HttpServletRequest request,
+			HttpServletResponse response) {
+		String token = null;
+		Cookie[] cookies = request.getCookies();
+		if (null == cookies) {
+			ResponseResult.newResult(ResponseResult.CODE_SUC, "退出成功");
+		}
+
+		for (Cookie cookie : cookies) {
+			String name = cookie.getName();
+			if (UserService.COOKIE_KEY.equals(name)) {
+				token = cookie.getValue();
+			}
+		}
+		userService.logoutByToken(token);
+		CookieUtils.setCookie(request, response, UserService.COOKIE_KEY, token,
+				0);
+		return ResponseResult.newResult(ResponseResult.CODE_SUC, "退出成功");
+	}
+
+	/**
+	 * 去登录
+	 * 
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@RequestMapping("/gotologin")
+	public void gotologin(HttpServletRequest request,
+			HttpServletResponse response) throws IOException {
+		String url = ssoUrl;
+		if (!url.endsWith("/")) {
+			url += "/";
+		}
+		String host = request.getHeader("host");
+		if (host.indexOf("j-") > -1) {
+			// 代理映射
+			url = mappingSso;
+			if (!url.endsWith("/")) {
+				url += "/";
+			}
+		}
+		response.sendRedirect(url + "login");
+	}
+
+	/**
+	 * 用户详情
+	 * 
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	public void gotouserinfo(HttpServletRequest request,
+			HttpServletResponse response) throws IOException {
+		String id = request.getParameter("id");
+		String url = ssoUrl;
+		if (!url.endsWith("/")) {
+			url += "/";
+		}
+		response.sendRedirect(url + "userinfo?id=" + id);
 	}
 
 	/**
@@ -530,9 +608,10 @@ public class BlogController {
 	 * @return
 	 * @throws IOException
 	 */
-	@RequestMapping("/imgupload.do")
+	@RequestMapping("/imgupload")
 	public void imgupload(@RequestParam("upload") CommonsMultipartFile file,
-			HttpServletRequest request, HttpServletResponse response) throws IOException {
+			HttpServletRequest request, HttpServletResponse response)
+			throws IOException {
 		// 如果设置了头是json响应 则返回的结果的标签会被转义，坑爹啊，调了我这么久
 		// setAjaxContentType(response);
 		PrintWriter out = response.getWriter();
@@ -549,10 +628,12 @@ public class BlogController {
 			out.println(editorcallback(cKEditorFuncNum, e.getMessage()));
 			out.flush();
 		}
-		/*out.println("<script type='text/javascript'>");
-		out.println("window.parent.CKEDITOR.tools.callFunction(" + CKEditorFuncNum
-				+ ",'http://www.ajie18.top/images/view.jpg','')");
-		out.println("</script>");*/
+		/*
+		 * out.println("<script type='text/javascript'>");
+		 * out.println("window.parent.CKEDITOR.tools.callFunction(" +
+		 * CKEditorFuncNum + ",'http://www.ajie18.top/images/view.jpg','')");
+		 * out.println("</script>");
+		 */
 		out.close();
 	}
 
@@ -579,6 +660,38 @@ public class BlogController {
 	private void setAjaxContentType(HttpServletResponse response) {
 		response.setContentType("application/json;charset=UTF-8");
 		response.setCharacterEncoding("utf-8");
+	}
+
+	@RequestMapping("test")
+	public String test() {
+		return prefix + "test";
+	}
+
+	@RequestMapping("uploadtest")
+	public void uploadtest(HttpServletRequest request,
+			HttpServletResponse response) {
+		try {
+			InputStream is = request.getInputStream();
+			BufferedInputStream bis = new BufferedInputStream(is);
+			int av = bis.available();
+			System.out.println(av);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@ResponseBody
+	@RequestMapping("getssohost")
+	public ResponseResult getssohost(HttpServletRequest request,
+			HttpServletResponse response) {
+		setAjaxContentType(response);
+		String host = request.getHeader("host");
+		String ssoHost = ssoUrl;
+		if (host.indexOf("j-") > -1) {
+			// 走了代理映射
+			ssoHost = mappingSso;
+		}
+		return ResponseResult.success(ssoHost);
 	}
 
 }

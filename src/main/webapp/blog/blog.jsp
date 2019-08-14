@@ -7,11 +7,11 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width ,initial-scale=1,maximum-scale=1.0, user-scalable=0">
 <title>详情</title>
-<link href="${ pageContext.request.contextPath }/${serverId }/css/global.css" rel="stylesheet" type="text/css">
-<link href="${ pageContext.request.contextPath }/${serverId }/common/common.css" rel="stylesheet" type="text/css">
-<link href="${ pageContext.request.contextPath }/${serverId }/blog/css/blog.css" rel="stylesheet" type="text/css">
-<link href="${ pageContext.request.contextPath }/${serverId}/css/dark-mode-support.css" rel="stylesheet" type="text/css">
-<link href="${ pageContext.request.contextPath }/${serverId}/plugin/suspend-btn.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/css/global.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/common/common.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/blog/css/blog.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/css/dark-mode-support.css" rel="stylesheet" type="text/css">
+<link href="${ pageContext.request.contextPath }/plugin/suspend-btn.css" rel="stylesheet" type="text/css">
 
 <style type="text/css">
 </style>
@@ -31,14 +31,14 @@ window.addEventListener("error" , function(e){
 <body class="darkMode">
 	<div class="main">
 		<div class="header-navi darkMode">
-			<div onclick="javascript:location.href='addblog.do'" class="addblog">写博客</div>
+			<div onclick="javascript:location.href='addblog'" class="addblog">写博客</div>
 				<div class="user-header">
 				<c:choose>
 					<c:when test="${not empty userid }">
 						<img  class="user userinfo" data-id="${userid }" data-type="userinfo"  src="${userheader }" />
 					</c:when>
 					<c:otherwise>
-						<div class="login-btn user" data-type="login" data-uri="sso/login.do">登录/注册</div>
+						<div class="login-btn" onclick="javascript:window.location.href='gotologin'" >登录/注册</div>
 					</c:otherwise>
 				</c:choose>
 			</div>
@@ -60,10 +60,10 @@ window.addEventListener("error" , function(e){
 					<div class="right-info">
 						<span class="hits">关注公众号和小程序，获取最新动态</span>
 						<div class="wxgz-qrcode">
-							<img alt="找不到图片" src="${ pageContext.request.contextPath }/${serverId }/images/my_wxgz_qrcode.jpg">
+							<img alt="找不到图片" src="${ pageContext.request.contextPath }/images/my_wxgz_qrcode.jpg">
 						</div>
 						<div class="wxgz-qrcode">
-							<img alt="找不到图片" src="${ pageContext.request.contextPath }/${serverId }/images/my_wxapp_code.jpg">
+							<img alt="找不到图片" src="${ pageContext.request.contextPath }/images/my_wxapp_code.jpg">
 						</div>
 					</div>
 				</div>
@@ -74,7 +74,7 @@ window.addEventListener("error" , function(e){
 							<img alt="" src="${userheader }" id="iUserHeader">
 						</c:when>
 						<c:otherwise>
-							<img alt="" src="${ pageContext.request.contextPath }/${serverId }/images/user_header_not_login.png" id="iUserHeader">
+							<img alt="" src="${ pageContext.request.contextPath }/images/user_header_not_login.png" id="iUserHeader">
 						</c:otherwise>
 					</c:choose>
 					
@@ -89,10 +89,10 @@ window.addEventListener("error" , function(e){
 						<span class="hits">关注公众号和小程序，获取最新动态</span>
 						<div class="footer-qr-code">
 							<div class="wxgz-qrcode">
-								<img alt="找不到图片" data-idx="1" class="viewImg" src="${ pageContext.request.contextPath }/${serverId }/images/my_wxgz_qrcode.jpg">
+								<img alt="找不到图片" data-idx="1" class="viewImg" src="${ pageContext.request.contextPath }/images/my_wxgz_qrcode.jpg">
 							</div>
 							<div class="wxgz-qrcode">
-								<img alt="找不到图片"  data-idx="2" class="viewImg"  src="${ pageContext.request.contextPath }/${serverId }/images/my_wxapp_code.jpg">
+								<img alt="找不到图片"  data-idx="2" class="viewImg"  src="${ pageContext.request.contextPath }/images/my_wxapp_code.jpg">
 							</div>
 						</div>
 						
@@ -124,8 +124,8 @@ window.addEventListener("error" , function(e){
 		<div class="page-log">页面错误日志</div>
 	</div>
 	<jsp:include page="/footer.jsp"></jsp:include>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/js/jquery-1.9.1.js"></script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/common/common.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/js/jquery-1.9.1.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/common/common.js"></script>
 	<script type="text/javascript" src="http://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
 	<script>
 	//日志弹窗
@@ -196,7 +196,6 @@ window.addEventListener("error" , function(e){
 		frame.find(".page-log").html(sb.join(""));
 		logFrame.show();
 	}
-		var serverId = '${serverId}';
 		var loginFrame = $("#iLoginFrame").getWindow();
 		loginFrame.setCloser(false);
 		loginFrame.clickbackhide();
@@ -215,10 +214,10 @@ window.addEventListener("error" , function(e){
 		wx.config(config);
 		 */
 	</script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/plugin/suspend-btn.js"></script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/js/dark-mode-support.js"></script>
-		<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId}/js/suspend-btn-instance.js"></script>
-	<script type="text/javascript" src="${ pageContext.request.contextPath }/${serverId }/blog/js/blog.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/plugin/suspend-btn.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/plugin/dark-mode-support.js"></script>
+		<script type="text/javascript" src="${ pageContext.request.contextPath }/js/suspend-btn-instance.js"></script>
+	<script type="text/javascript" src="${ pageContext.request.contextPath }/blog/js/blog.js"></script>
 	<script type="text/temp" id="iCommentTemp">
 		<section class="comment-item">
 			<div data-id='[userId]' class="left-user-info">
