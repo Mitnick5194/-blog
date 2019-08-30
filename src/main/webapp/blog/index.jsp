@@ -49,7 +49,7 @@ window.addEventListener("error" , function(e){
 									<div class="user-name">${username }</div><img  class="user-header-img" src="${ pageContext.request.contextPath }/images/default_user_header.jpg" />
 								</c:when>
 								<c:otherwise>
-									<div class="user-name">独孤怎会求败</div><img  class="user-header-img" src="${userheader }" />
+									<div class="user-name">${username }</div><img  class="user-header-img" src="${userheader }" />
 								</c:otherwise>
 							</c:choose>
 						</div>

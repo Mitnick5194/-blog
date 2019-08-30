@@ -63,10 +63,10 @@ public class CommentServiceImpl implements CommentService {
 	}
 
 	public RedisBlog getRedisBlog() {
-		BlogServiceImpl blogService = null;
+		BlogServiceImpl blogServiceImp = null;
 		if (blogService instanceof BlogServiceImpl) {
-			blogService = (BlogServiceImpl) this.blogService;
-			return blogService.getRedisBlog();
+			blogServiceImp = (BlogServiceImpl) this.blogService;
+			return blogServiceImp.getRedisBlog();
 		}
 		logger.warn("打开blog缓存失败，无法更新评论信息到缓存");
 		return null;

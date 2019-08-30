@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -128,7 +129,6 @@ public class BlogController {
 	 */
 	@RequestMapping("index")
 	public String index(HttpServletRequest request, HttpServletResponse response) {
-		logger.info("index pager");
 		TbUser user = userService.getUser(request);
 		if (null != user) {
 			if (!StringUtils.isEmpty(user.getNickname())) {
@@ -139,19 +139,21 @@ public class BlogController {
 			request.setAttribute("userheader", user.getHeader());
 			request.setAttribute("userid", user.getId());
 		}
-		logger.info("into blog controller");
 		return prefix + "index";
+
 	}
 
 	/**
-	 * 博客详情
+	 * 博客详情（以前是使用blog，但是使用/拦截后是不行的，因为控制器的名称是BlogControl，当访问/blog/blog时，
+	 * springmvc会当做是访问/blog项目下的blog控制器，没有方法名，自动找到index，所以最后会访问到index）
 	 * 
 	 * @param request
 	 * @param response
 	 * @return
 	 */
-	@RequestMapping("/blog")
-	public String blog(HttpServletRequest request, HttpServletResponse response) {
+	@RequestMapping("blogdetail")
+	public String blogdetail(HttpServletRequest request,
+			HttpServletResponse response) {
 		TbUser user = userService.getUser(request);
 		if (null != user) {
 			request.setAttribute("username", user.getName());
@@ -580,7 +582,31 @@ public class BlogController {
 				url += "/";
 			}
 		}
-		response.sendRedirect(url + "login");
+		String protocol = request.getProtocol();
+		if (null == protocol) {
+			// 理论上不可能吧？？？
+			protocol = "http";
+		}
+		if (protocol.toLowerCase().startsWith("https")) {
+			protocol = "https";
+		} else {
+			protocol = "http";
+		}
+		// uri部分
+		String uri = request.getRequestURI();
+		// 参数部分
+		String query = request.getQueryString();
+		String ref = "";
+		ref = protocol + "://" + host + uri;
+		if (!StringUtils.isEmpty(query)) {// 有带参
+			try {
+				// %3f解码后是?
+				ref += "%3f" + URLEncoder.encode(query, "utf-8");
+			} catch (UnsupportedEncodingException e) {
+				logger.warn("不支持utf-8字符编码转换" + query);
+			}
+		}
+		response.sendRedirect(url + "login?ref=" + ref);
 	}
 
 	/**

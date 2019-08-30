@@ -172,7 +172,6 @@
 					</execution>
 				</executions>
 				<configuration>
-					<serverFile>properties/server.properties</serverFile>
 				</configuration>
 			</plugin>
 		</plugins>

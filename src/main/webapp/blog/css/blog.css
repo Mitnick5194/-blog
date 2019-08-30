@@ -6,7 +6,9 @@ html, body {overflow: hidden;overflow-y: auto;background-color: #f5f6f7;}
 .header-navi>div{display: inline-block;}
 .header-navi>.user-header{display: inline-flex;align-items: center;height: 100%;margin-right: 15px;cursor: pointer;}
 .header-navi>.user-header div:nth-child(2){margin-left: 10px;color: #337ab7}
-.header-navi>.user-header>img{width: 25px; height: 25px;border-radius: 50%;}
+.user-info{display: flex;align-items: center;}
+.user-info>.user-name{display: inline-block;margin-right: 5px;    max-width: 100px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;}
+.user-info>.user-header-img{width: 25px; height: 25px;border-radius: 50%;}
 .login-btn{color: blue}
 .addblog{cursor: pointer;padding: 0 10px 0 20px; vertical-align: top;background: url('/blog/images/edit.jpg') no-repeat left center;background-size: 20px;}
 /* 内容 */

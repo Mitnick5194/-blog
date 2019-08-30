@@ -1,5 +1,8 @@
 package com.ajie.blog.blog.impl;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -77,7 +80,8 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 
 	@Override
 	public TbBlog getBlogById(int id, TbUser operator) throws BlogException {
-		TbBlog blog = mapper.selectByPrimaryKey(id);
+		TbBlogMapper proxy = getProxy();
+		TbBlog blog = proxy.selectByPrimaryKey(id);
 		if (null == blog)
 			return null;
 		// 从缓存数据中更新实时性不严格的字段
@@ -93,6 +97,19 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 				&& (operator == null || operator.getId() != blog.getUserid()))
 			throw new BlogException("找不到文章");
 		return blog;
+	}
+
+	// XXX可以在这里实现保存前的一些动作
+	private TbBlogMapper getProxy() {
+		return (TbBlogMapper) Proxy.newProxyInstance(mapper.getClass()
+				.getClassLoader(), mapper.getClass().getInterfaces(),
+				new InvocationHandler() {
+					@Override
+					public Object invoke(Object proxy, Method method,
+							Object[] args) throws Throwable {
+						return method.invoke(mapper, args);
+					}
+				});
 	}
 
 	@Deprecated
@@ -475,24 +492,37 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 
 	@Override
 	public void work() {
-		System.out.println("定时任务");
 		TbBlogExample ex = new TbBlogExample();
 		// 更新评论数和阅读数
 		List<TbBlog> blogs = mapper.selectByExample(ex);
 		for (TbBlog blog : blogs) {
-			int commentCount = commentService.getBlogCommentCount(blog.getId());
-			int readNum = 0;
-			try {
-				RedisBlogVo vo = redisClient.hgetAsBean(REDIS_PREFIX,
-						REDIS_PREFIX + blog.getId(), RedisBlogVo.class);
-				if (null != vo)
-					readNum = vo.getReadnum();
-			} catch (RedisException e) {
-				logger.warn("无法从redis中获取blog", e);
-			}
-			mapper.updateBlogCRCount(blog.getId(), commentCount, readNum);
+			syncData(blog);
 		}
-		logger.info("更新blog的评论数和阅读数");
+		logger.info("定时任务更新blog的评论数和阅读数");
+	}
+
+	/**
+	 * 博客的数据同步
+	 * 
+	 * @param blog
+	 */
+	private void syncData(TbBlog blog) {
+		int commentCount = commentService.getBlogCommentCount(blog.getId());
+		int readNum = blog.getReadnum();
+		RedisBlogVo vo = getRedisBlog().getRedisBlog(blog.getId());
+		if (null != vo) {
+			readNum = Math.max(readNum, vo.getReadnum());
+			// 更新评论数到redis
+			blog.setCommentnum(commentCount);
+			try {
+				vo.updateRedisData(blog);
+				logger.info("定时任务同步博客评论数到redis缓存,id:" + blog.getId() + "，变更前："
+						+ vo.getCommentnum() + "，变更后：" + commentCount);
+			} catch (RedisException e) {
+				logger.warn("更新评论数到redis缓存失败", e);
+			}
+		}
+		mapper.updateBlogCRCount(blog.getId(), commentCount, readNum);
 	}
 
 	@Override

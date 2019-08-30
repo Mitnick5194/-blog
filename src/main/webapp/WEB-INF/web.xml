@@ -20,8 +20,7 @@
 	</filter>
 	<filter-mapping>
 		<filter-name>requestFilter</filter-name>
-		<url-pattern>*.do</url-pattern>
-		<url-pattern>*.admin</url-pattern>
+		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 
 	<!-- 由spring注册系统模块 -->
@@ -86,7 +85,7 @@
 	</filter>
 	<filter-mapping>
 		<filter-name>encodingFilter</filter-name>
-		<url-pattern>*.do</url-pattern>
+		<url-pattern>/</url-pattern>
 	</filter-mapping>
 
 	<error-page>

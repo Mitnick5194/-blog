@@ -2,6 +2,8 @@
 	//夜间模式cookid key
 	var NIGHT_COOKIE_KEY = "night-mode";
 	var NIGHT_COOKIE_VAL = "night";
+	//用户系统地址
+	var SSO_URL_KEY= "sso_service_url";
 	// 模板
 	String.prototype.temp = function(obj) {
 		return this.replace(/\[\w+\]?/g, function(match) {
@@ -110,15 +112,32 @@
 	$("#iBlogs").on("click" ,".title", "section" , function(e){
 		e.stopPropagation(); //禁止冒泡
 		var id = $(this).parent("section").attr("data-id");
-		location.href = "blog?id="+id;
+		location.href = "blogdetail?id="+id;
 	})
 	
 	$("#iBlogs").on("click" , ".user" , function(e){
 		e.stopPropagation(); //禁止冒泡
 		var _this = $(this);
 		var id = _this.attr("data-id");
-		location.href = "userinfo?id="+id;
+		var url = getSsoServiceUrl("userinfo");
+		location.href = url+"?id="+id;
 	})
+	
+	function getSsoServiceUrl(biz){
+		var url = $.Storage.get(SSO_URL_KEY);
+		if(!$.isEmptyObject(url)){
+			return url;
+		}
+		$.ajax({
+			url: 'getssohost',
+			async: false,//阻塞执行
+			success: function(data){
+				url = data.msg;
+			}
+		})
+		$.Storage.set(SSO_URL_KEY,url);
+		return url + "/"+biz;
+	};
 	
 	var tags = $("#iTags");
 	$("#iListTags").on("click",".tag",function(e){

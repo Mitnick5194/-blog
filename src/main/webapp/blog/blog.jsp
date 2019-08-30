@@ -32,17 +32,31 @@ window.addEventListener("error" , function(e){
 	<div class="main">
 		<div class="header-navi darkMode">
 			<div onclick="javascript:location.href='addblog'" class="addblog">写博客</div>
-				<div class="user-header">
+			<div class="user-header">
 				<c:choose>
 					<c:when test="${not empty userid }">
-						<img  class="user userinfo" data-id="${userid }" data-type="userinfo"  src="${userheader }" />
+						<div class="user-info user" data-id="${userid }"
+							data-type="userinfo">
+							<c:choose>
+								<c:when test="${empty userheader }">
+									<div class="user-name">${username }</div>
+									<img class="user-header-img"
+										src="${ pageContext.request.contextPath }/images/default_user_header.jpg" />
+								</c:when>
+								<c:otherwise>
+									<div class="user-name">${username }</div>
+									<img class="user-header-img" src="${userheader }" />
+								</c:otherwise>
+							</c:choose>
+						</div>
 					</c:when>
 					<c:otherwise>
-						<div class="login-btn" onclick="javascript:window.location.href='gotologin'" >登录/注册</div>
+						<div class="login-btn"
+							onclick="javascript:window.location.href='gotologin'">登录/注册</div>
 					</c:otherwise>
 				</c:choose>
 			</div>
-			</div>
+		</div>
 			<div class="container">
 				<div class="container-content">
 					<div class="center-main darkMode" id="iBlogs">
@@ -70,8 +84,16 @@ window.addEventListener("error" , function(e){
 				<div class="comment darkMode">
 					<input type="hidden" id="iUser" value="${userid }" />
 					<c:choose>
-						<c:when test="${not empty userheader }">
-							<img alt="" src="${userheader }" id="iUserHeader">
+						<c:when test="${not empty userid }">
+							<c:choose>
+								<c:when test="${not empty userheader }">
+									<img alt="图片不存在" src="${userheader }" id="iUserHeader">
+								</c:when>
+								<c:otherwise>
+									<img alt="图片不存在" src="${ pageContext.request.contextPath }/images/default_user_header.jpg" id="iUserHeader">
+								</c:otherwise>
+							</c:choose>
+							
 						</c:when>
 						<c:otherwise>
 							<img alt="" src="${ pageContext.request.contextPath }/images/user_header_not_login.png" id="iUserHeader">

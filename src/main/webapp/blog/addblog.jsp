@@ -18,7 +18,7 @@
 .header-navi>div{display: inline-block;}
 .header-navi>.user-header{display: inline-flex;align-items: center;height: 100%;margin-right: 25px;cursor: pointer;}
 .header-navi>.user-header div:nth-child(2){margin-left: 10px;color: #337ab7}
-.header-navi>.user-header>img{width: 25px; height: 25px;border-radius: 50%;}
+.header-navi .user-header-img{width: 25px; height: 25px;border-radius: 50%;}
 .login-btn{color: blue}.main>.editor-area{width: 100%;}
 .form>input[name=title]{width: 94%;height: 40px;line-height: 40px;background: #eee;margin-bottom: 5px;padding: 0 10px;border: none;font-size: 16px;}
 .labels{align-items: center;margin:15px 0;flex-wrap:wrap;}
@@ -66,9 +66,17 @@
 	
 	<div class="container">
 		<div class="header-navi darkMode">
-			<div class="user-header">
-				<img  class="user" data-id="${userid }" data-type="userinfo"  src="${userheader }" />
-			</div>
+			<c:choose>
+				<c:when test="${empty userheader }">
+					<div class="user-name">${username }</div>
+					<img class="user-header-img"
+						src="${ pageContext.request.contextPath }/images/default_user_header.jpg" />
+				</c:when>
+				<c:otherwise>
+					<div class="user-name">${username }</div>
+					<img class="user-header-img" src="${userheader }" />
+				</c:otherwise>
+			</c:choose>
 		</div>
 		<div class="flex main">
 			<div class="left">

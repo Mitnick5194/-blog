@@ -3,6 +3,7 @@ package com.ajie.blog.blog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.ajie.blog.blog.exception.BlogException;
 import com.ajie.chilli.cache.redis.RedisClient;
 import com.ajie.chilli.cache.redis.RedisException;
 import com.ajie.dao.pojo.TbBlog;
@@ -32,8 +33,8 @@ public class RedisBlog {
 	public RedisBlogVo getRedisBlog(int blogId) {
 		RedisBlogVo blogVo = null;
 		try {
-			blogVo = redisClient.hgetAsBean(BlogService.REDIS_PREFIX, BlogService.REDIS_PREFIX
-					+ blogId, RedisBlogVo.class);
+			blogVo = redisClient.hgetAsBean(BlogService.REDIS_PREFIX,
+					BlogService.REDIS_PREFIX + blogId, RedisBlogVo.class);
 			if (null == blogVo) {
 				blogVo = new RedisBlogVo();
 			}
@@ -62,7 +63,7 @@ public class RedisBlog {
 		private int collectnum;
 		/** 阅读数 */
 		private int readnum;
-
+		/** 不序列化，不保存到redis */
 		private transient RedisBlog redisBlog;
 
 		public RedisBlogVo() {
@@ -160,16 +161,10 @@ public class RedisBlog {
 
 		private void save() {
 			try {
-				redisBlog.redisClient.hset(BlogService.REDIS_PREFIX, BlogService.REDIS_PREFIX + id,
-						this);
+				redisBlog.redisClient.hset(BlogService.REDIS_PREFIX,
+						BlogService.REDIS_PREFIX + id, this);
 			} catch (RedisException e) {
-				try {
-					// 重试
-					redisBlog.redisClient.hset(BlogService.REDIS_PREFIX, BlogService.REDIS_PREFIX
-							+ id, this);
-				} catch (RedisException e1) {
-					logger.warn("RedisBlogVo保存缓存失败", e1);
-				}
+				logger.warn("RedisBlogVo保存缓存失败", e);
 			}
 		}
 
@@ -184,6 +179,32 @@ public class RedisBlog {
 			blog.setPraisenum(praisenum);
 			blog.setReadnum(readnum);
 			blog.setCommentnum(commentnum);
+		}
+
+		/**
+		 * 更新redis数据，只会更新字段不为0的
+		 * 
+		 * @param blog
+		 * @throws BlogException
+		 */
+		public void updateRedisData(TbBlog blog) throws RedisException {
+			if (blog.getId() != id) {
+				throw new RedisException("更新对象与源对象不一致，更新对象id:" + blog.getId()
+						+ "，源对象：id:" + id);
+			}
+			if (blog.getCommentnum() != 0) {
+				commentnum = blog.getCommentnum();
+			}
+			if (blog.getPraisenum() != 0) {
+				praisenum = blog.getPraisenum();
+			}
+			if (blog.getReadnum() != 0) {
+				readnum = blog.getReadnum();
+			}
+			if (blog.getCollectnum() != 0) {
+				collectnum = blog.getCollectnum();
+			}
+			save();
 		}
 
 		public int getCommentnum() {

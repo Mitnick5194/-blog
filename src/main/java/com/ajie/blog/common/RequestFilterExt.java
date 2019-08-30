@@ -50,13 +50,14 @@ import com.alibaba.fastjson.annotation.JSONField;
  *
  */
 public class RequestFilterExt extends RequestFilter implements Worker {
-	private static final Logger logger = LoggerFactory.getLogger(RequestFilterExt.class);
+	private static final Logger logger = LoggerFactory
+			.getLogger(RequestFilterExt.class);
 	/** 命令类型--执行备份 */
 	private static final int TYPE_BACKUP = 1;
 	/** 命令类型 -- 执行回滚 */
 	private static final int TYPE_ROLLBACK = 2;
-	public static final String[] TABLE_HEADER = { "key\t", "count\t", "ip\t", "date\t",
-			"address\r\n" };
+	public static final String[] TABLE_HEADER = { "key\t", "count\t", "ip\t",
+			"date\t", "address\r\n" };
 	/** 访问记录 key是ip去除. */
 	private Map<String, Access> accessRecord;
 	/** 制表符ASCII码 \t */
@@ -76,14 +77,15 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 	/** 访问记录的文件路径 */
 	private String path;
 	/** 线程池 */
-	ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 50, 10, TimeUnit.SECONDS,
-			new ArrayBlockingQueue<Runnable>(50), new ThreadPoolExecutor.AbortPolicy());
+	ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 50, 10,
+			TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(50),
+			new ThreadPoolExecutor.AbortPolicy());
 
 	public RequestFilterExt() {
 		accessRecord = new HashMap<String, Access>();
 		String ymd = TimeUtil.formatYMD(new Date());
-		TimingTask.createTimingTask("access-info-save", this, TimeUtil.parse(ymd + " 00:10"),
-				1*60*60 * 1000);// 每小时
+		TimingTask.createTimingTask("access-info-save", this,
+				TimeUtil.parse(ymd + " 00:10"), 1 * 60 * 60 * 1000);// 每小时
 	}
 
 	public void setRemoteCmd(RemoteCmd cmd) {
@@ -111,11 +113,13 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 	}
 
 	@Override
-	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-			throws IOException, ServletException {
+	public void doFilter(ServletRequest request, ServletResponse response,
+			FilterChain chain) throws IOException, ServletException {
 		HttpServletRequest req = (HttpServletRequest) request;
 		HttpServletResponse res = (HttpServletResponse) response;
 		String uri = req.getRequestURI();
+		String ui = req.getHeader("uri");
+		System.out.println(ui);
 		if (uri.indexOf("manager") > -1) {
 			res.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
@@ -198,14 +202,16 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 				String[] split = new String[5];
 				for (int i = 0; i < bytes.length; i++) {
 					if (bytes[i] == HT) {
-						String str = new String(bytes, preIdx, i - preIdx, DEFAULT_CHARSET);
+						String str = new String(bytes, preIdx, i - preIdx,
+								DEFAULT_CHARSET);
 						split[cursor++] = str.trim();
 						preIdx = i + 1;
 					}
 
 				}
 				// 最后一组没有HT
-				String str = new String(bytes, preIdx, bytes.length - preIdx, DEFAULT_CHARSET);
+				String str = new String(bytes, preIdx, bytes.length - preIdx,
+						DEFAULT_CHARSET);
 				split[cursor] = str.trim();
 				int count = 0;
 				String scount = split[1];
@@ -237,8 +243,8 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 	 * @param buffer
 	 * @throws IOException
 	 */
-	static private void write2File(FileChannel channel, ByteBuffer buffer, Map<String, Access> map)
-			throws IOException {
+	static private void write2File(FileChannel channel, ByteBuffer buffer,
+			Map<String, Access> map) throws IOException {
 		Iterator<Entry<String, Access>> it = map.entrySet().iterator();
 		while (it.hasNext()) {
 			buffer.clear();
@@ -246,7 +252,8 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 			Access access = next.getValue();
 			buffer.put(access.getKey().getBytes(DEFAULT_CHARSET));
 			buffer.put(HT);
-			buffer.put(String.valueOf(access.getCount()).getBytes(DEFAULT_CHARSET));
+			buffer.put(String.valueOf(access.getCount()).getBytes(
+					DEFAULT_CHARSET));
 			buffer.put(HT);
 			buffer.put(access.getIp().getBytes(DEFAULT_CHARSET));
 			buffer.put(HT);
@@ -364,7 +371,8 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		if (null == map) {
 			map = new HashMap<String, Access>();
 		}
-		Iterator<Entry<String, Access>> iterator = accessRecord.entrySet().iterator();
+		Iterator<Entry<String, Access>> iterator = accessRecord.entrySet()
+				.iterator();
 		while (iterator.hasNext()) {
 			Entry<String, Access> next = iterator.next();
 			String key = next.getKey();
@@ -462,7 +470,8 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 			byte[] byteArray = array.toByteArray();
 			entry = toEntry(byteArray);
 			if (null != entry && !entry.isEmpty()) {
-				Iterator<Entry<String, Access>> it = entry.entrySet().iterator();
+				Iterator<Entry<String, Access>> it = entry.entrySet()
+						.iterator();
 				while (it.hasNext()) {
 					Entry<String, Access> next = it.next();
 					Access value = next.getValue();

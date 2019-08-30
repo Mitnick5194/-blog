@@ -1,5 +1,7 @@
 (function(){
 	var main = $("#iBlogs");
+	//用户系统地址
+	var SSO_URL_KEY= "sso_service_url";
 	// 模板
 	String.prototype.temp = function(obj) {
 		return this.replace(/\[\w+\]?/g, function(match) {
@@ -94,6 +96,9 @@
 		var sb = [];
 		for(let i=0;i<data.length;i++){
 			var d = data[i];
+			if(!d["userHeader"]){
+				d["userHeader"] = "/blog/images/default_user_header.jpg"//XXX hardcode项目名
+			}
 			d["order"] = (i+1); //加入层数
 			sb.push(tempstr.temp(d));
 		}
@@ -184,7 +189,6 @@
 		var loading = $.showloading("正在登录");
 		
 		var host = location.host;
-		var url;
 		/*if(host.indexOf("localhost") > -1 ||host.indexOf("127.0") > -1 || host.indexOf("10.8") > -1){
 			url = "http://localhost:8081/sso/dologin.do";
 		}else if(serverId == 'xff'){
@@ -193,39 +197,31 @@
 		else{
 			url = "http://www.ajie18.top/sso/dologin.do";
 		}*/
+		var url = getSsoServiceUrl("dologin");
 		$.ajax({
-			url: 'getssohost',
-			success: function(data){
-				var url = data.msg;
-				$.ajax({
-				    url: url,
-				   /* dataType: 'JSONP',*/
-				   /* jsonpCallback: 'callback',*///success后会进入这个函数，如果不声明，也不会报错，直接在success里处理也行
-				    type: 'post',
-				    data:{
-				    	key:name,
-				    	password: password
-				    },
-				    success: function (data) {
-				    	if(data.code != 200){
-				    		$.showToast(data.msg);
-				    		return;
-				    	}
-				    	$.showToast("登录成功",function(){
-				    		//清空内容
-				    		$("#iLoginForm").find("input").val("");
-				    		loginFrame.hide();
-				    		changeHeader(data.data);
-				    	})
-				    },
-				    error: function(e){
-				    	$.showToast(e.statusText);
-				    }
-				});
-			},
-			error: function(e){
-				$.showToast(e.statusText);
-			}
+		    url: url,
+		    dataType: 'JSONP',
+		    jsonpCallback: 'callback',//success后会进入这个函数，如果不声明，也不会报错，直接在success里处理也行
+		    type: 'get',//这里即使设置post,其实也是get，因为jsonp只支持get
+		    data:{
+		    	key:name,
+		    	password: password
+		    },
+		    success: function (data) {
+		    	if(data.code != 200){
+		    		$.showToast(data.msg);
+		    		return;
+		    	}
+		    	$.showToast("登录成功",function(){
+		    		//清空内容
+		    		$("#iLoginForm").find("input").val("");
+		    		loginFrame.hide();
+		    		changeHeader(data.data);
+		    	})
+		    },
+		    error: function(e){
+		    	$.showToast(e.statusText);
+		    }
 		})
 		
 	})
@@ -244,9 +240,27 @@
 		e = e || window.event;
 		e.stopPropagation(); //禁止冒泡
 		var _this = $(this);
-		var id = _this.parent("section").attr("data-id");
-		location.href = "blog?id="+id;
+		var id = _this.attr("data-id");
+		var url = getSsoServiceUrl("userinfo");
+		location.href = url+"?id="+id;
 	})
+	
+	function getSsoServiceUrl(biz){
+		var url = $.Storage.get(SSO_URL_KEY);
+		if(url){
+			return url + biz;
+		}
+		$.ajax({
+			url: 'getssohost',
+			async: false,//阻塞执行
+			success: function(data){
+				url = data.msg;
+			}
+		})
+		$.Storage.set(SSO_URL_KEY,url);
+		return url + biz;
+	};
+	
 	
 	$("#iBlogs").on("click",".edit",function(){
 		var id = $(this).attr("data-id");
