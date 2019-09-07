@@ -44,6 +44,12 @@
 			<version>1.0.10</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.ajie</groupId>
+			<artifactId>push</artifactId>
+			<version>1.0.10</version>
+		</dependency>
+
 
 		<!-- 日志处理 -->
 		<dependency>
@@ -164,13 +170,13 @@
 				<groupId>com.ajie</groupId>
 				<artifactId>custom-maven-plugin</artifactId>
 				<version>1.0.10</version>
-				<executions>
+				<!-- <executions>
 					<execution>
 						<goals>
 							<goal>install</goal>
 						</goals>
 					</execution>
-				</executions>
+				</executions> -->
 				<configuration>
 				</configuration>
 			</plugin>

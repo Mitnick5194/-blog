@@ -2,3 +2,4 @@
 /redis-conf.properties
 /ssh.properties
 /blog.properties
+/activemq.properties

@@ -37,6 +37,7 @@ import com.ajie.chilli.remote.RemoteCmd;
 import com.ajie.chilli.remote.exception.RemoteException;
 import com.ajie.chilli.support.TimingTask;
 import com.ajie.chilli.support.Worker;
+import com.ajie.chilli.thread.ThreadPool;
 import com.ajie.chilli.utils.TimeUtil;
 import com.ajie.chilli.utils.common.JsonUtils;
 import com.ajie.resource.ResourceService;
@@ -76,6 +77,8 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 	private ResourceService resourceService;
 	/** 访问记录的文件路径 */
 	private String path;
+
+	private ThreadPool threadPool;
 	/** 线程池 */
 	ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 50, 10,
 			TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(50),
@@ -83,13 +86,16 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 
 	public RequestFilterExt() {
 		accessRecord = new HashMap<String, Access>();
-		String ymd = TimeUtil.formatYMD(new Date());
-		TimingTask.createTimingTask("access-info-save", this,
-				TimeUtil.parse(ymd + " 00:10"), 1 * 60 * 60 * 1000);// 每小时
+		TimingTask.createTimingTask(threadPool, "access-info-save", this,
+				"00:10", 1 * 60 * 60 * 1000);// 每小时
 	}
 
 	public void setRemoteCmd(RemoteCmd cmd) {
 		this.cmd = cmd;
+	}
+
+	public void setThreadPool(ThreadPool pool) {
+		threadPool = pool;
 	}
 
 	public RemoteCmd getRemoteCmd() {
@@ -137,8 +143,8 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		if (accessRecord.isEmpty())
 			return;
 		String path = this.path;
-		// path为空或为本机的情况
-		if (null == path || isNative()) {
+		// path为空的情况
+		if (null == path) {
 			// 如果没有，则在classpath中找，但是这样很危险，每次部署都会被覆盖
 			URL url = Thread.currentThread().getContextClassLoader()
 					.getResource("access-record.txt");
@@ -297,17 +303,6 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		} catch (IOException e) {
 			logger.error("", e);
 		}
-	}
-
-	/** 判断是否为本机或本地 */
-	private boolean isNative() {
-		if (null == serverId)
-			return true;
-		if ("".equals(serverId))
-			return true;
-		if ("255".equals(serverId))
-			return true;
-		return false;
 	}
 
 	/**

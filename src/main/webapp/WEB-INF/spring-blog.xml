@@ -13,9 +13,21 @@
 
 	<!-- 加载所有的配置文件 -->
 	<context:property-placeholder location="classpath:properties/*.properties" />
+
+	<!-- 集中线程池 -->
+	<bean class="com.ajie.chilli.thread.ThreadPool" id="threadPool">
+		<constructor-arg index="0" value="bolg-bg-thread-" />
+		<constructor-arg index="1" value="2" />
+		<constructor-arg index="2" value="30" />
+		<constructor-arg index="3" value="50" />
+		<property name="openSchdule" value="true" />
+		<property name="schedulePoolName" value="blog-schedule-thread-" />
+		<property name="scheduleMinSize" value="1" />
+		<property name="scheduleMaxSize" value="5" />
+	</bean>
+
 	<!-- 这个过滤器一定不能配在spring-mvc的spring文件中 -->
 	<bean id="requestFilter" class="com.ajie.blog.common.RequestFilterExt">
-		<property name="serviceId" value="${serverId}" />
 		<property name="userService" ref="userService" />
 		<property name="encoding" value="utf-8" />
 		<property name="mode" value="intercept" />
@@ -23,6 +35,7 @@
 		<property name="remoteCmd" ref="remoteCmd" />
 		<property name="xssOpen" value="true" />
 		<property name="resourceService" ref="resourceService" />
+		<property name="threadPool" ref="threadPool" />
 		<property name="uriList">
 			<list>
 				<value>*addblog*</value>
@@ -120,5 +133,6 @@
 
 	<bean class="com.ajie.blog.blog.impl.BlogWatcher" id="blogWatcher">
 		<property name="blogService" ref="blogService"></property>
+		<property name="pushProducer" ref="pushProducer"></property>
 	</bean>
 </beans>

@@ -17,7 +17,7 @@ html, body {overflow: hidden;overflow-y: auto;background-color: #f5f6f7;}
 .center-main {padding: 20px;background: #fff;border-bottom:1px solid #eee;overflow: scroll;}
 .center-main>.title>.title-text{font-size: 22px;font-weight: bold;}
 .center-main>.title>.edit{background: url('/blog/images/edit.jpg') no-repeat left center;padding-left:20px;margin-left: 15px;white-space: normal;display: inline-block;}
-.center-main>.title>.delete{background: url('/blog/images/blog_del.jpg') no-repeat left center;padding-left:20px;margin-left: 15px;white-space: normal;display: inline-block;background-size:18px;color: red;}
+.center-main>.title>.delete{background: url('/blog/images/blog_del.jpg') no-repeat left center;padding-left:20px;margin-left: 15px;white-space: normal;display: inline-block;background-size:18px;color: red;cursor: pointer;}
 .center-main>section{padding: 5px 0;}
 .user-list>span{display: inline-block;padding: 0 5px;}
 .tags>span{display: inline-block;}

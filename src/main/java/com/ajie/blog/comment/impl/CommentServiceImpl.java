@@ -1,5 +1,6 @@
 package com.ajie.blog.comment.impl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -14,8 +15,11 @@ import com.ajie.blog.blog.RedisBlog;
 import com.ajie.blog.blog.RedisBlog.RedisBlogVo;
 import com.ajie.blog.blog.impl.BlogServiceImpl;
 import com.ajie.blog.comment.CommentException;
+import com.ajie.blog.comment.CommentListener;
+import com.ajie.blog.comment.CommentListeners;
 import com.ajie.blog.comment.CommentService;
 import com.ajie.chilli.cache.redis.RedisClient;
+import com.ajie.chilli.thread.ThreadPool;
 import com.ajie.chilli.utils.common.JsonUtils;
 import com.ajie.dao.mapper.TbCommentMapper;
 import com.ajie.dao.pojo.TbBlog;
@@ -31,8 +35,8 @@ import com.ajie.sso.role.Role;
  * @author niezhenjie
  *
  */
-@Service
-public class CommentServiceImpl implements CommentService {
+@Service("commentService")
+public class CommentServiceImpl implements CommentService, CommentListeners {
 	private static final Logger logger = LoggerFactory
 			.getLogger(CommentServiceImpl.class);
 	@Resource
@@ -41,6 +45,12 @@ public class CommentServiceImpl implements CommentService {
 	private BlogService blogService;
 	@Resource
 	private RedisClient redisClient;
+
+	/** 线程池 */
+	@Resource
+	private ThreadPool threadPool;
+
+	private List<CommentListener> listeners;
 
 	@Override
 	public TbComment createComment(String content, int blogId, TbUser user)
@@ -97,7 +107,7 @@ public class CommentServiceImpl implements CommentService {
 	@Override
 	public void deleteAllComment(TbBlog blog, TbUser operator)
 			throws CommentException {
-		if (null == blog || blog.getId() == 0)
+		if (blog.getId() == 0)
 			throw new CommentException("删除失败，博客不存在");
 		if (null == operator || operator.getId() == 0)
 			throw new CommentException("删除失败，不能删除非自己的评论");
@@ -108,7 +118,7 @@ public class CommentServiceImpl implements CommentService {
 		if (userId != operator.getId() && !isAdmin(operator)) {
 			throw new CommentException("删除失败，不能删除非自己的评论");
 		}
-		mapper.updateCommentsMark(operator.getId(), MARK_STATE_DELETE);
+		mapper.updateBlogCommentsMark(blog.getId(), MARK_STATE_DELETE);
 	}
 
 	@Override
@@ -173,5 +183,23 @@ public class CommentServiceImpl implements CommentService {
 			}
 		}
 		return false;
+	}
+
+	private List<CommentListener> getListeners() {
+		if (null == listeners) {
+			listeners = new ArrayList<CommentListener>();
+		}
+		return listeners;
+	}
+
+	@Override
+	public void register(CommentListener listener) {
+		listeners.add(listener);
+	}
+
+	@Override
+	public boolean unregister(CommentListener listener) {
+		List<CommentListener> ls = getListeners();
+		return ls.remove(listener);
 	}
 }

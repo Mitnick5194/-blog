@@ -10,6 +10,15 @@ import com.ajie.dao.pojo.TbBlog;
  */
 public interface BlogListener {
 
+	/** 消息通知业务类型 -- 创建博客 */
+	public static final String BIZ_CREATE = "C";
+	/** 消息通知业务类型 -- 删除博客 */
+	public static final String BIZ_DELETE = "D";
+	/** 消息通知业务类型 -- 更新博客 */
+	public static final String BIZ_UPDATE = "U";
+	/** activemq推送名称 */
+	public static final String MESSAGE_PUSH_NAME = "blog-crud";
+
 	/**
 	 * 创建博客
 	 * 

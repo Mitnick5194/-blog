@@ -26,7 +26,7 @@
 	<!-- 由spring注册系统模块 -->
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
-		<param-value>/WEB-INF/spring-blog.xml,/WEB-INF/spring-dao.xml,/WEB-INF/spring-redis.xml,/WEB-INF/spring-tran.xml</param-value>
+		<param-value>/WEB-INF/spring-blog.xml,/WEB-INF/spring-dao.xml,/WEB-INF/spring-redis.xml,/WEB-INF/spring-tran.xml,/WEB-INF/spring-activemq.xml</param-value>
 	</context-param>
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>

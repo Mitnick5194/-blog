@@ -5,7 +5,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -19,7 +18,6 @@ import com.ajie.blog.blog.BlogService;
 import com.ajie.blog.blog.RedisBlog;
 import com.ajie.blog.blog.RedisBlog.RedisBlogVo;
 import com.ajie.blog.blog.exception.BlogException;
-import com.ajie.blog.comment.CommentException;
 import com.ajie.blog.comment.CommentService;
 import com.ajie.chilli.cache.redis.RedisClient;
 import com.ajie.chilli.cache.redis.RedisException;
@@ -27,7 +25,7 @@ import com.ajie.chilli.common.MarkSupport;
 import com.ajie.chilli.common.MarkVo;
 import com.ajie.chilli.support.TimingTask;
 import com.ajie.chilli.support.Worker;
-import com.ajie.chilli.utils.TimeUtil;
+import com.ajie.chilli.thread.ThreadPool;
 import com.ajie.chilli.utils.common.JsonUtils;
 import com.ajie.dao.mapper.TbBlogMapper;
 import com.ajie.dao.pojo.TbBlog;
@@ -58,13 +56,16 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 
 	private List<BlogListener> blogListeners;
 
+	/** 线程池 */
+	@Resource
+	private ThreadPool threadPool;
+
 	private Object lock = new Object();
 
 	public BlogServiceImpl() {
 		// 定时对redis缓存数据进行处理
-		String ymd = TimeUtil.formatYMD(new Date());
-		TimingTask.createTimingTask("blog-timing", this,
-				TimeUtil.parse(ymd + " 00:10"), 24 * 60 * 60 * 1000);// 零时十分，准时更新,每天这个时间执行
+		TimingTask.createTimingTask(threadPool, "blog-timing", this, "00:10",
+				24 * 60 * 60 * 1000);// 零时十分，准时更新,每天这个时间执行
 	}
 
 	public RedisBlog getRedisBlog() {
@@ -96,6 +97,7 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 		if (markVo.isMark(VISIT_SELF.getId())
 				&& (operator == null || operator.getId() != blog.getUserid()))
 			throw new BlogException("找不到文章");
+
 		return blog;
 	}
 
@@ -370,14 +372,24 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 			throw new BlogException("删除异常，请稍后再试");
 		if (null == operator)
 			throw new BlogException("删除失败，操作用户为空");
-		mapper.updateBlogMark(blog.getId(), operator.getId(), MARK_STATE_DELETE);
-		logger.info("用户" + operator.getId() + " 删除了博客:" + blog.getId());
-		// 删除博客对应的评论
-		try {
-			commentService.deleteAllComment(blog, operator);
-		} catch (CommentException e) {
-			logger.error("删除博客成功，删除博客对应的评论失败", e);
+		final TbBlog b = getBlogById(blog.getId(), operator);
+		if (null == b) {
+			logger.error("文章不存在");
 		}
+		mapper.updateBlogMark(b.getId(), operator.getId(), MARK_STATE_DELETE);
+		logger.info("用户" + operator.getId() + " 删除了博客:" + b.getId());
+		// 删除通知
+		Runnable r = new Runnable() {
+			@Override
+			public void run() {
+				List<BlogListener> Listeners = getBlogListeners();
+				for (BlogListener l : Listeners) {
+					l.onDelete(b);
+				}
+			}
+		};
+		threadPool.execute(r);
+
 	}
 
 	@Override
