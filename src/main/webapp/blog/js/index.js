@@ -123,10 +123,21 @@
 		location.href = url+"?id="+id;
 	})
 	
+	$("#iHeaderNavi").on("click",'.user',function(e){
+		e.stopPropagation(); //禁止冒泡
+		var _this = $(this);
+		var id = _this.attr("data-id");
+		var url = getSsoServiceUrl("userinfo");
+		location.href = url+"?id="+id;
+	})
+	
 	function getSsoServiceUrl(biz){
 		var url = $.Storage.get(SSO_URL_KEY);
 		if(!$.isEmptyObject(url)){
-			return url;
+			if(!url.endsWith("/")){
+				url += "/";
+			}
+			return url + biz;
 		}
 		$.ajax({
 			url: 'getssohost',
@@ -135,8 +146,11 @@
 				url = data.msg;
 			}
 		})
+		if(!url.endsWith("/")){
+			url += "/";
+		}
 		$.Storage.set(SSO_URL_KEY,url);
-		return url + "/"+biz;
+		return url + biz;
 	};
 	
 	var tags = $("#iTags");
@@ -173,6 +187,37 @@
 		if (tags[0] != e.target && tags.has(e.target).length == 0) {
 			tags.removeClass("active");
 		}
+	})
+	
+	var getBlogHost = (function(){
+		var host = null;
+		return function(biz){
+			if(host){
+				if(!host.endsWith("/")){
+					host += "/"
+				}
+				return host + biz;
+			}
+			$.ajax({
+				url: 'getblogurl',
+				async: false,//阻塞执行
+				success: function(data){
+					var url = data.msg;
+					if(!url.endsWith("/")){
+						url += "/";
+					}
+					host = url;
+				}
+			})
+			return host + biz;
+			
+		}
+	})();
+	
+	$("#iLogin").on("click",function(){
+		var host = getBlogHost("index");
+		var sso = getSsoServiceUrl("login");
+		location.href = sso+"?ref="+host;
 	})
 	
 })()

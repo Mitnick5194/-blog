@@ -38,7 +38,7 @@ window.addEventListener("error" , function(e){
 			<span class="bar-icon"></span>
 			<span class="bar-icon"></span>
 		</div>
-		<div class="header-navi darkMode">
+		<div class="header-navi darkMode" id="iHeaderNavi">
 			<div onclick="javascript:location.href='addblog'" class="addblog">写博客</div>
 			<div class="user-header">
 				<c:choose>
@@ -55,7 +55,7 @@ window.addEventListener("error" , function(e){
 						</div>
 					</c:when>
 					<c:otherwise>
-						<div class="login-btn" onclick="javascript:window.location.href='gotologin'">登录/注册</div>
+						<div class="login-btn" id="iLogin">登录/注册</div>
 					</c:otherwise>
 				</c:choose>
 			</div>

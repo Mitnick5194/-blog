@@ -266,20 +266,29 @@
 		var id = $(this).attr("data-id");
 		location.href = "addblog?id="+id;
 	}).on("click",".delete",function(){
-		var id = $(this).attr("data-id");
-		$.ajax({
-			type: 'post',
-			data:{
-				id:id,
-			},
-			url:'deleteblog',
-			success:function(data){
-				
-			},
-			fail: function(){
-				
-			}
-		})
+		if(confirm("确定删除博客及其所有的评论吗？")){
+			var id = $(this).attr("data-id");
+			var loading = $.showloading("正在删除");
+			$.ajax({
+				type: 'post',
+				data:{
+					id:id,
+				},
+				url:'deleteblog',
+				success:function(data){
+					$.showToast("删除成功",function(){
+						location.href = "http://www.nzjie.cn";
+					})
+				},
+				fail: function(e){
+					$.showToast("系统忙，请稍后再试");
+				},
+				complete: function(){
+					loading.hide();
+				}
+			})
+		}
+
 	})
 	
 })()

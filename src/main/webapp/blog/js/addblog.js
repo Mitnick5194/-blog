@@ -1,4 +1,6 @@
 (function(){
+	//用户系统地址
+	var SSO_URL_KEY= "sso_service_url";
 	const HITS_CONTROL = "hit-control";//不再提醒缓存key,true不再提醒
 	var hits = $("#iHitsFrame").getWindow();
 	hits.setCloser(false);
@@ -197,12 +199,35 @@
     	 return true;
      }
      
+     function getSsoServiceUrl(biz){
+ 		var url = $.Storage.get(SSO_URL_KEY);
+ 		if(!$.isEmptyObject(url)){
+ 			if(!url.endsWith("/")){
+ 				url += "/";
+ 			}
+ 			return url + biz;
+ 		}
+ 		$.ajax({
+ 			url: 'getssohost',
+ 			async: false,//阻塞执行
+ 			success: function(data){
+ 				url = data.msg;
+ 			}
+ 		})
+ 		if(!url.endsWith("/")){
+ 			url += "/";
+ 		}
+ 		$.Storage.set(SSO_URL_KEY,url);
+ 		return url + biz;
+ 	};
+ 	
+     
      $(".user").on("click",function(e){
- 		e = e || window.event;
- 		e.stopPropagation(); //禁止冒泡
+    	e.stopPropagation(); //禁止冒泡
  		var _this = $(this);
- 		var id = $(this).parent("section").attr("data-id");
-		location.href = "blog?id="+id;
+ 		var id = _this.attr("data-id");
+ 		var url = getSsoServiceUrl("userinfo");
+ 		location.href = url+"?id="+id;
  	})
  	
      $("#iHitsFrame").on("click",".hitsForbit",function(){

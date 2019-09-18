@@ -11,6 +11,7 @@ import javax.annotation.Resource;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ajie.blog.blog.BlogListener;
@@ -36,7 +37,8 @@ import com.ajie.sso.role.Role;
 import com.ajie.sso.role.RoleUtils;
 
 @Service("blogService")
-public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
+public class BlogServiceImpl implements BlogService, MarkSupport, Worker
+		 {
 	private static final Logger logger = LoggerFactory
 			.getLogger(BlogServiceImpl.class);
 	/** 数据库mapper */
@@ -62,8 +64,9 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 
 	private Object lock = new Object();
 
-	public BlogServiceImpl() {
-		// 定时对redis缓存数据进行处理
+	@Autowired
+	public BlogServiceImpl(ThreadPool threadPool) {
+		this.threadPool = threadPool;
 		TimingTask.createTimingTask(threadPool, "blog-timing", this, "00:10",
 				24 * 60 * 60 * 1000);// 零时十分，准时更新,每天这个时间执行
 	}
@@ -583,4 +586,11 @@ public class BlogServiceImpl implements BlogService, MarkSupport, Worker {
 		}
 		return blogListeners;
 	}
+
+/*	@Override
+	public void afterPropertiesSet() throws Exception {
+		// 定时对redis缓存数据进行处理
+		TimingTask.createTimingTask(threadPool, "blog-timing", this, "00:10",
+				24 * 60 * 60 * 1000);// 零时十分，准时更新,每天这个时间执行
+	}*/
 }

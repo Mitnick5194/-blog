@@ -130,6 +130,11 @@
 	<bean class="java.lang.String" id="mappingBlog">
 		<constructor-arg index="0" value="${mapping-blog-url}" />
 	</bean>
+	
+	<!-- blog链接 -->
+	<bean class="java.lang.String" id="blogUrl">
+		<constructor-arg index="0" value="${blog-url}" />
+	</bean>
 
 	<bean class="com.ajie.blog.blog.impl.BlogWatcher" id="blogWatcher">
 		<property name="blogService" ref="blogService"></property>

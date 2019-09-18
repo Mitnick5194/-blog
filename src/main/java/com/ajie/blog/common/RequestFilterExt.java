@@ -17,9 +17,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -79,15 +76,16 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 	private String path;
 
 	private ThreadPool threadPool;
+
 	/** 线程池 */
-	ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 50, 10,
-			TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(50),
-			new ThreadPoolExecutor.AbortPolicy());
+	/*
+	 * ThreadPoolExecutor executor = new ThreadPoolExecutor(1, 50, 10,
+	 * TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(50), new
+	 * ThreadPoolExecutor.AbortPolicy());
+	 */
 
 	public RequestFilterExt() {
 		accessRecord = new HashMap<String, Access>();
-		TimingTask.createTimingTask(threadPool, "access-info-save", this,
-				"00:10", 1 * 60 * 60 * 1000);// 每小时
 	}
 
 	public void setRemoteCmd(RemoteCmd cmd) {
@@ -96,6 +94,15 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 
 	public void setThreadPool(ThreadPool pool) {
 		threadPool = pool;
+		startTask();
+	}
+
+	/**
+	 * 启动定时任务
+	 */
+	private void startTask() {
+		TimingTask.createTimingTask(threadPool, "access-info-save", this,
+				"00:10", TimeUtil.MILLIOFHOUR);// 每小时 XXX
 	}
 
 	public RemoteCmd getRemoteCmd() {
@@ -124,8 +131,6 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		HttpServletRequest req = (HttpServletRequest) request;
 		HttpServletResponse res = (HttpServletResponse) response;
 		String uri = req.getRequestURI();
-		String ui = req.getHeader("uri");
-		System.out.println(ui);
 		if (uri.indexOf("manager") > -1) {
 			res.sendError(HttpServletResponse.SC_FORBIDDEN);
 			return;
@@ -174,12 +179,14 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 			logger.info("正在执行回滚操作");
 			backup(path, TYPE_ROLLBACK);// 回滚
 		} finally {
-			try {
-				channel.close();
-				raf.close();
-				channel = null;
-				raf = null;
-			} catch (IOException e) {
+			if (null != channel) {
+				try {
+					channel.close();
+					raf.close();
+					channel = null;
+					raf = null;
+				} catch (IOException e) {
+				}
 			}
 
 		}
@@ -319,7 +326,7 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		if (type == TYPE_BACKUP) {
 			final String comand = "cp  " + path + " " + path + ".bak";
 			// 因为remoteCmd是使用阻塞会话，这里手动使用异步处理
-			executor.execute(new Runnable() {
+			threadPool.execute(new Runnable() {
 				@Override
 				public void run() {
 					try {
@@ -332,7 +339,7 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 
 		} else if (type == TYPE_ROLLBACK) {
 			final String comand = "rm " + path + ".bak";
-			executor.execute(new Runnable() {
+			threadPool.execute(new Runnable() {
 				@Override
 				public void run() {
 					try {
@@ -386,7 +393,7 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 	private void enterRecord(HttpServletRequest request) {
 		String uri = request.getRequestURI();
 		// 只记录访问首页
-		if (uri.indexOf("/blog/index.do") == -1) {
+		if (uri.indexOf("loadblogs") == -1) {
 			return;
 		}
 		String ip = request.getHeader("X-Real-IP");
@@ -403,19 +410,23 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 		access.setCount(access.getCount() + 1);
 		final Access acc = access;
 		// 异步查询ip地址
-		executor.execute(new Runnable() {
+		threadPool.execute(new Runnable() {
 			@Override
 			public void run() {
 				try {
 					IpQueryVo vo = resourceService.queryIpAddress(acc.getIp(),
 							IpQueryApi.PROVIDER_IPSTACK.getId());
-					if (null == vo) {
+					if (IpQueryVo._nil.equals(vo)) {
 						if (logger.isTraceEnabled()) {
 							logger.trace("查询ip失败,ip:" + acc.getIp());
 						}
 						return;
 					}
-					String address = vo.getProvince() + "省" + vo.getCity();
+					String province = vo.getProvince();
+					if (!province.endsWith("省")) {
+						province += "省";
+					}
+					String address = province + vo.getCity();
 					acc.setAddress(address);
 				} catch (Exception e) {
 					logger.error("查询ip失败", e);
@@ -483,8 +494,7 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}
-		// 在写入内存
+		} // 在写入内存
 		if (null == entry) {
 			return;
 		}
@@ -506,6 +516,7 @@ public class RequestFilterExt extends RequestFilter implements Worker {
 			e.printStackTrace();
 		}
 		System.out.println("done");
+
 	}
 
 	public static byte[] toBytes(Map<String, Access> data) {

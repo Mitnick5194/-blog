@@ -89,10 +89,13 @@ public class BlogController {
 	/** sso系统链接 */
 	@Resource(name = "ssourl")
 	private String ssoUrl;
-
+	/** blog系统链接 */
+	@Resource(name = "blogUrl")
+	private String blogUrl;
 	/** sso系统内网映射链接 */
 	@Resource(name = "mappingSso")
 	private String mappingSso;
+
 	/** sso系统链接 */
 	@Resource(name = "mappingBlog")
 	private String mappingBlog;
@@ -718,6 +721,27 @@ public class BlogController {
 			ssoHost = mappingSso;
 		}
 		return ResponseResult.success(ssoHost);
+	}
+
+	/**
+	 * 获取博客系统的链接
+	 * 
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 */
+	@ResponseBody
+	@RequestMapping("getblogurl")
+	ResponseResult getblogurl(HttpServletRequest request,
+			HttpServletResponse response) throws IOException {
+		setAjaxContentType(response);
+		String host = request.getHeader("host");
+		String url = blogUrl;
+		if (host.indexOf("j-") > -1) {
+			// 走了代理映射
+			url = mappingBlog;
+		}
+		return ResponseResult.success(url);
 	}
 
 }
